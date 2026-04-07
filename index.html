@@ -365,6 +365,19 @@ canvas{width:100%;border-radius:8px;display:block}
 .gd-user-name{font-size:.84rem;font-weight:700;color:var(--mint-dk)}
 .gd-user-email{font-size:.72rem;color:var(--txt3);margin-top:1px}
 
+.plan-row{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bdr);gap:10px}
+.plan-row:last-child{border-bottom:none}
+.plan-e{font-size:1rem;width:21px;text-align:center;flex-shrink:0}
+.plan-bdy{flex:1;min-width:0}
+.plan-cat{font-size:.83rem;font-weight:600;color:var(--txt)}
+.plan-bar-wrap{margin-top:3px;position:relative;height:3px;background:var(--bdr);border-radius:99px;overflow:visible}
+.plan-bar-plan{height:100%;border-radius:99px;opacity:.4;transition:width .4s ease}
+.plan-bar-actual{position:absolute;top:0;left:0;height:100%;border-radius:99px;transition:width .4s ease}
+.plan-nums{text-align:right;flex-shrink:0;min-width:80px}
+.plan-amt{font-family:"Playfair Display",Georgia,serif;font-size:.84rem;font-weight:700;color:var(--txt)}
+.plan-vs{font-size:.67rem;margin-top:1px;font-weight:700}
+.plan-under{color:var(--mint-dk)}.plan-over{color:var(--red-txt)}.plan-eq{color:var(--txt3)}
+.toast{
 .toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
   left:50%;transform:translateX(-50%) translateY(80px);
   background:var(--txt);color:var(--bg);border-radius:20px;padding:8px 16px;
@@ -408,6 +421,7 @@ canvas{width:100%;border-radius:8px;display:block}
     <div class="ntab"     data-v="debt"     id="nt-debt">    <span class="ti">💳</span>Debt     </div>
     <div class="ntab"     data-v="history"  id="nt-history"> <span class="ti">📅</span>History  </div>
     <div class="ntab"     data-v="food"     id="nt-food">    <span class="ti">🥗</span>Food     </div>
+    <div class="ntab"     data-v="plan"     id="nt-plan">    <span class="ti">📋</span>Plan     </div>
     <div class="ntab"     data-v="learn"    id="nt-learn">   <span class="ti">✨</span>Learn    </div>
     <div class="ntab"     data-v="settings" id="nt-settings"><span class="ti">⚙️</span>Manage   </div>
   </nav>
@@ -550,6 +564,58 @@ canvas{width:100%;border-radius:8px;display:block}
     </div>
   </div>
 </div>
+<!-- ══ PLAN VIEW ══ -->
+<div class="view" id="view-plan">
+  <div class="lhero" style="background:linear-gradient(135deg,#eef0fc,#e8f0f8)">
+    <div class="lpill" style="background:var(--peri-lt);color:var(--peri-dk)">📋 Monthly Blueprint</div>
+    <div class="lttl" style="color:var(--peri-dk)">Your ideal monthly plan.</div>
+    <div class="lsub">Set your expected salary and plan how you want to distribute it — this is your reference sheet, separate from your real budget.</div>
+  </div>
+
+  <!-- Plan income -->
+  <div class="card">
+    <div class="chd">
+      <div class="cttl">💰 Expected Monthly Income</div>
+      <div class="csub" id="planIncTot">$0.00</div>
+    </div>
+    <div class="row">
+      <label class="rlbl">Monthly Salary / Income</label>
+      <input class="nput" type="number" inputmode="decimal" min="0" step="0.01"
+        placeholder="0.00" id="planIncInput" oninput="savePlanInc()">
+    </div>
+    <div class="cfoot">
+      <div class="bmeta">
+        <span id="planLeftLbl" style="color:var(--txt3)">Enter your income to begin</span>
+        <span id="planPctLbl">0% planned</span>
+      </div>
+      <div class="btrack" style="margin-top:4px"><div class="bfill" id="planFill" style="width:0%;background:linear-gradient(90deg,var(--peri),var(--lav))"></div></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="sg">
+    <div class="st"><div class="stv" id="planTotInc">$0</div><div class="stl">Income</div></div>
+    <div class="st"><div class="stv" id="planTotAlloc">$0</div><div class="stl">Planned</div></div>
+    <div class="st"><div class="stv" id="planTotLeft">$0</div><div class="stl">Unplanned</div></div>
+    <div class="st"><div class="stv" id="planSaveRate">0%</div><div class="stl">Savings %</div></div>
+  </div>
+
+  <!-- Copy to budget button -->
+  <button class="fab" id="planCopyBtn" style="background:linear-gradient(135deg,var(--peri),var(--lav));margin-bottom:10px">
+    📥 Use as starting point this month
+  </button>
+
+  <!-- Plan categories -->
+  <div class="slbl">Planned Allocations</div>
+  <div id="planCatCards"></div>
+
+  <!-- Comparison -->
+  <div class="card" id="planCompareCard">
+    <div class="chd"><div class="cttl">📊 Plan vs Actual This Month</div></div>
+    <div id="planCompareList"></div>
+  </div>
+</div>
+
 <div class="view" id="view-learn">
   <div class="lhero">
     <div class="lpill">Zero-Based Budgeting</div>
@@ -1601,6 +1667,131 @@ function checkReward(){
   if(inc>0&&Math.abs(inc-bud)<1){var ck=cmk();if(!S.rewarded[ck]){S.rewarded[ck]=true;saveS();setTimeout(fireConfetti,400);}}
 }
 
+// ===== MONTHLY PLAN
+var PLAN_KEY='zb_plan';
+function getPlan(){try{return JSON.parse(localStorage.getItem(PLAN_KEY)||'{}');}catch(e){return {};}}
+function savePlan(p){localStorage.setItem(PLAN_KEY,JSON.stringify(p));}
+
+function savePlanInc(){
+  var el=g('planIncInput');if(!el)return;
+  var p=getPlan();p.income=parseFloat(el.value)||0;
+  savePlan(p);renderPlan();
+}
+
+function planAlloc(){
+  var p=getPlan();
+  return S.cats.reduce(function(s,c){
+    return s+c.items.reduce(function(s2,it){return s2+(+((p.alloc||{})[it.id])||0);},0);
+  },0);
+}
+
+function renderPlan(){
+  var p=getPlan();
+  var inc=p.income||0;
+  var alloc=planAlloc();
+  var left=inc-alloc;
+  var pct=inc>0?Math.min(alloc/inc*100,100):0;
+  var sav=(+((p.alloc||{})['emerg']||0))+(+((p.alloc||{})['retire']||0))+(+((p.alloc||{})['stgoal']||0))+(+((p.alloc||{})['brok']||0));
+
+  // Header
+  var pit=g('planIncTot');if(pit)pit.textContent=fmt(inc);
+  var pti=g('planTotInc');if(pti)pti.textContent=fmtS(inc);
+  var pta=g('planTotAlloc');if(pta)pta.textContent=fmtS(alloc);
+  var ptl=g('planTotLeft');if(ptl)ptl.textContent=fmtS(left);
+  var psr=g('planSaveRate');if(psr)psr.textContent=inc>0?(sav/inc*100).toFixed(0)+'%':'0%';
+  var pf=g('planFill');if(pf)pf.style.width=pct.toFixed(1)+'%';
+  var pll=g('planLeftLbl');
+  if(pll){
+    if(inc===0)pll.textContent='Enter your income to begin';
+    else if(Math.abs(left)<1)pll.textContent='Perfect plan! Every dollar has a job 🎉';
+    else if(left>0)pll.textContent=fmt(left)+' left to plan';
+    else pll.textContent=fmt(Math.abs(left))+' over planned income';
+    pll.style.color=Math.abs(left)<1?'var(--mint-dk)':left<0?'var(--red-txt)':'var(--txt3)';
+  }
+  var ppl=g('planPctLbl');if(ppl)ppl.textContent=pct.toFixed(0)+'% planned';
+
+  // Input
+  var pii=g('planIncInput');if(pii&&pii!==document.activeElement&&inc>0)pii.value=inc;
+
+  // Category cards
+  var cc=g('planCatCards');if(!cc)return;
+  var planAllocs=p.alloc||{};
+  cc.innerHTML=S.cats.map(function(cat){
+    var catTotal=cat.items.reduce(function(s,it){return s+(+planAllocs[it.id]||0);},0);
+    var catPct=inc>0?(catTotal/inc*100):0;
+    return '<div class="card">'+
+      '<div class="chd">'+
+        '<div class="cttl">'+cat.e+' '+cat.label+'</div>'+
+        '<div class="csub">'+fmt(catTotal)+(inc>0?' · '+catPct.toFixed(0)+'%':'')+'</div>'+
+      '</div>'+
+      cat.items.map(function(it){
+        return '<div class="row">'+
+          '<label class="rlbl">'+it.label+'</label>'+
+          '<input class="nput" type="number" inputmode="decimal" min="0" step="0.01"'+
+            ' placeholder="0.00" value="'+(planAllocs[it.id]||'')+'"'+
+            ' data-pid="'+it.id+'"'+
+            ' oninput="updatePlanAlloc(this.dataset.pid,this.value)">'+
+        '</div>';}).join('')+
+      '<div class="cfoot">'+
+        '<div class="bmeta">'+
+          '<span style="color:var(--txt3)">'+fmt(catTotal)+' / month</span>'+
+          '<span style="color:var(--txt3)">'+(inc>0?catPct.toFixed(0)+'% of income':'')+'</span>'+
+        '</div>'+
+      '</div></div>';}).join('');
+
+  // Comparison with actual
+  renderPlanComparison(planAllocs);
+}
+
+function updatePlanAlloc(itemId,val){
+  var p=getPlan();
+  if(!p.alloc)p.alloc={};
+  p.alloc[itemId]=parseFloat(val)||0;
+  savePlan(p);renderPlan();
+}
+
+function renderPlanComparison(planAllocs){
+  var el=g('planCompareList');if(!el)return;
+  var rows=S.cats.map(function(cat){
+    var planned=cat.items.reduce(function(s,it){return s+(+planAllocs[it.id]||0);},0);
+    var actual=catSpent(cat.id);
+    if(planned===0&&actual===0)return '';
+    var maxV=Math.max(planned,actual,1);
+    var planW=(planned/maxV*100).toFixed(1);
+    var actW=(actual/maxV*100).toFixed(1);
+    var diff=planned-actual;
+    var diffTxt=Math.abs(diff)<0.5?'On track':diff>0?fmt(diff)+' under':fmt(Math.abs(diff))+' over';
+    var diffCls=Math.abs(diff)<0.5?'plan-eq':diff>0?'plan-under':'plan-over';
+    return '<div class="plan-row">'+
+      '<div class="plan-e">'+cat.e+'</div>'+
+      '<div class="plan-bdy">'+
+        '<div class="plan-cat">'+cat.label+'</div>'+
+        '<div class="plan-bar-wrap">'+
+          '<div class="plan-bar-plan" style="width:'+planW+'%;background:'+cat.color+'"></div>'+
+          '<div class="plan-bar-actual" style="width:'+actW+'%;background:'+cat.color+'"></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="plan-nums">'+
+        '<div class="plan-amt">'+fmt(actual)+'</div>'+
+        '<div class="plan-vs '+diffCls+'">plan: '+fmt(planned)+'</div>'+
+      '</div>'+
+    '</div>';}).join('');
+  el.innerHTML=rows||'<div style="padding:14px;font-size:.8rem;color:var(--txt3);text-align:center">Add planned amounts above to see comparison.</div>';
+}
+
+function copyPlanToMonth(){
+  var p=getPlan();
+  if(!p.alloc||Object.keys(p.alloc).length===0){
+    toast('Set up your plan first!');return;
+  }
+  if(!confirm('Copy your monthly plan to this month budget allocations? This will overwrite your current budget amounts.'))return;
+  Object.keys(p.alloc).forEach(function(id){
+    S.bud[id]=p.alloc[id]||0;
+  });
+  saveS();renderBudget();go('budget');
+  toast('Plan copied to budget! Now add your money 💜');
+}
+
 // ===== MODAL HELPERS
 function openOv(id){var el=g(id);if(el)el.classList.add('open');}
 function closeOv(id){var el=g(id);if(el)el.classList.remove('open');}
@@ -1613,7 +1804,7 @@ function go(name){
   var view=g('view-'+name);if(view)view.classList.add('on');
   var tab=g('nt-'+name);if(tab)tab.classList.add('on');
   window.scrollTo(0,0);
-  var renders={budget:renderBudget,expenses:renderExpenses,summary:renderSummary,
+  var renders={budget:renderBudget,expenses:renderExpenses,summary:renderSummary,plan:renderPlan,
     goals:renderGoals,debt:renderDebts,history:renderHistory,food:renderFood,settings:renderSettings};
   if(renders[name])renders[name]();
 }
@@ -1642,6 +1833,7 @@ window.onload=function(){
   renderDebts();
   renderHistory();
   renderFood();
+  renderPlan();
   renderSettings();
   updateHdr();
   snapShot();
@@ -1656,7 +1848,7 @@ window.onload=function(){
   on('themeRow',toggleTheme);
 
   // Nav
-  ['budget','expenses','summary','goals','debt','history','food','learn','settings'].forEach(function(name){
+  ['budget','expenses','summary','goals','debt','history','food','plan','learn','settings'].forEach(function(name){
     on('nt-'+name,function(){go(name);});
   });
 
@@ -1712,6 +1904,9 @@ window.onload=function(){
   on('saveFilesBtn',saveToFiles);
   on('bkBtn',quickBackup);
   on('remFreq',function(){var p=getBkPrefs();var rf=g('remFreq');p.remDays=parseInt(rf?rf.value:'4');saveBkPrefs(p);toast('Reminder saved');});
+
+  // Plan
+  on('planCopyBtn',copyPlanToMonth);
 
   // Settings reset
   on('resetBtn',function(){
