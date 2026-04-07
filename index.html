@@ -1675,7 +1675,7 @@ function savePlan(p){localStorage.setItem(PLAN_KEY,JSON.stringify(p));}
 function savePlanInc(){
   var el=g('planIncInput');if(!el)return;
   var p=getPlan();p.income=parseFloat(el.value)||0;
-  savePlan(p);renderPlan();
+  savePlan(p);renderPlanTotals();
 }
 
 function planAlloc(){
@@ -1685,7 +1685,7 @@ function planAlloc(){
   },0);
 }
 
-function renderPlan(){
+function renderPlanTotals(){
   var p=getPlan();
   var inc=p.income||0;
   var alloc=planAlloc();
@@ -1693,7 +1693,6 @@ function renderPlan(){
   var pct=inc>0?Math.min(alloc/inc*100,100):0;
   var sav=(+((p.alloc||{})['emerg']||0))+(+((p.alloc||{})['retire']||0))+(+((p.alloc||{})['stgoal']||0))+(+((p.alloc||{})['brok']||0));
 
-  // Header
   var pit=g('planIncTot');if(pit)pit.textContent=fmt(inc);
   var pti=g('planTotInc');if(pti)pti.textContent=fmtS(inc);
   var pta=g('planTotAlloc');if(pta)pta.textContent=fmtS(alloc);
@@ -1710,19 +1709,39 @@ function renderPlan(){
   }
   var ppl=g('planPctLbl');if(ppl)ppl.textContent=pct.toFixed(0)+'% planned';
 
-  // Input
-  var pii=g('planIncInput');if(pii&&pii!==document.activeElement&&inc>0)pii.value=inc;
+  // Update category subtotals without rebuilding inputs
+  var p2=getPlan();var planAllocs=p2.alloc||{};var inc2=p2.income||0;
+  S.cats.forEach(function(cat){
+    var catTotal=cat.items.reduce(function(s,it){return s+(+planAllocs[it.id]||0);},0);
+    var catPct=inc2>0?(catTotal/inc2*100):0;
+    var subEl=g('plansub_'+cat.id);
+    if(subEl)subEl.textContent=fmt(catTotal)+(inc2>0?' · '+catPct.toFixed(0)+'%':'');
+    var metaEl=g('planmeta_'+cat.id);
+    if(metaEl)metaEl.innerHTML='<span style="color:var(--txt3)">'+fmt(catTotal)+' / month</span>'+
+      '<span style="color:var(--txt3)">'+(inc2>0?catPct.toFixed(0)+'% of income':'')+'</span>';
+  });
 
-  // Category cards
-  var cc=g('planCatCards');if(!cc)return;
+  renderPlanComparison(planAllocs);
+}
+
+function renderPlan(){
+  var p=getPlan();
+  var inc=p.income||0;
   var planAllocs=p.alloc||{};
+
+  // Set income input value only if not focused
+  var pii=g('planIncInput');
+  if(pii&&pii!==document.activeElement)pii.value=inc||'';
+
+  // Build category cards with stable IDs so inputs persist
+  var cc=g('planCatCards');if(!cc)return;
   cc.innerHTML=S.cats.map(function(cat){
     var catTotal=cat.items.reduce(function(s,it){return s+(+planAllocs[it.id]||0);},0);
     var catPct=inc>0?(catTotal/inc*100):0;
     return '<div class="card">'+
       '<div class="chd">'+
         '<div class="cttl">'+cat.e+' '+cat.label+'</div>'+
-        '<div class="csub">'+fmt(catTotal)+(inc>0?' · '+catPct.toFixed(0)+'%':'')+'</div>'+
+        '<div class="csub" id="plansub_'+cat.id+'">'+fmt(catTotal)+(inc>0?' · '+catPct.toFixed(0)+'%':'')+'</div>'+
       '</div>'+
       cat.items.map(function(it){
         return '<div class="row">'+
@@ -1732,22 +1751,19 @@ function renderPlan(){
             ' data-pid="'+it.id+'"'+
             ' oninput="updatePlanAlloc(this.dataset.pid,this.value)">'+
         '</div>';}).join('')+
-      '<div class="cfoot">'+
-        '<div class="bmeta">'+
-          '<span style="color:var(--txt3)">'+fmt(catTotal)+' / month</span>'+
-          '<span style="color:var(--txt3)">'+(inc>0?catPct.toFixed(0)+'% of income':'')+'</span>'+
-        '</div>'+
-      '</div></div>';}).join('');
+      '<div class="cfoot"><div class="bmeta" id="planmeta_'+cat.id+'">'+
+        '<span style="color:var(--txt3)">'+fmt(catTotal)+' / month</span>'+
+        '<span style="color:var(--txt3)">'+(inc>0?catPct.toFixed(0)+'% of income':'')+'</span>'+
+      '</div></div></div>';}).join('');
 
-  // Comparison with actual
-  renderPlanComparison(planAllocs);
+  renderPlanTotals();
 }
 
 function updatePlanAlloc(itemId,val){
   var p=getPlan();
   if(!p.alloc)p.alloc={};
   p.alloc[itemId]=parseFloat(val)||0;
-  savePlan(p);renderPlan();
+  savePlan(p);renderPlanTotals();
 }
 
 function renderPlanComparison(planAllocs){
