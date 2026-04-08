@@ -365,6 +365,31 @@ canvas{width:100%;border-radius:8px;display:block}
 .gd-user-name{font-size:.84rem;font-weight:700;color:var(--mint-dk)}
 .gd-user-email{font-size:.72rem;color:var(--txt3);margin-top:1px}
 
+.owed-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;margin-bottom:9px;overflow:hidden;box-shadow:var(--shd)}
+.owed-hd{display:flex;align-items:flex-start;padding:12px 14px 8px;gap:10px}
+.owed-ico{width:38px;height:38px;border-radius:10px;background:var(--lav-lt);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;color:var(--lav-dk);font-weight:800}
+.owed-info{flex:1;min-width:0}
+.owed-person{font-family:"Playfair Display",Georgia,serif;font-weight:700;font-size:.92rem;color:var(--txt)}
+.owed-desc{font-size:.72rem;color:var(--txt3);margin-top:2px;font-weight:600}
+.owed-meta{font-size:.68rem;color:var(--txt3);margin-top:2px;font-weight:600;display:flex;gap:8px;flex-wrap:wrap}
+.owed-badge{padding:2px 7px;border-radius:20px;font-weight:700}
+.owed-badge.card{background:var(--peri-lt);color:var(--peri-dk)}
+.owed-badge.debit{background:var(--lav-lt);color:var(--lav-dk)}
+.owed-badge.cash{background:var(--mint-lt);color:var(--mint-dk)}
+.owed-badge.transfer{background:var(--sur);color:var(--txt2)}
+.owed-badge.yes{background:var(--mint-lt);color:var(--mint-dk)}
+.owed-badge.maybe{background:#fff8e0;color:#a07800}
+.owed-badge.gift{background:var(--rose-lt);color:var(--rose-dk)}
+.owed-amt{text-align:right;flex-shrink:0}
+.owed-num{font-family:"Playfair Display",Georgia,serif;font-weight:700;font-size:1.05rem;color:var(--lav-dk)}
+.owed-date{font-size:.66rem;color:var(--txt3);margin-top:2px;font-weight:600}
+.owed-acts{display:flex;gap:7px;padding:0 14px 12px}
+.owed-act{flex:1;padding:8px;background:var(--bg3);border:1px solid var(--bdr2);border-radius:9px;font-family:"Nunito",sans-serif;font-size:.74rem;font-weight:700;color:var(--txt2);cursor:pointer;text-align:center}
+.owed-act.pri{background:var(--acc);color:#fff;border:none}
+.owed-act.ret{background:var(--mint-lt);color:var(--mint-dk);border-color:rgba(152,204,192,.4)}
+.owed-act:active{opacity:.85}
+.owed-returned{opacity:.55}
+.owed-returned .owed-num{color:var(--mint-dk);text-decoration:line-through}
 .plan-row{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bdr);gap:10px}
 .plan-row:last-child{border-bottom:none}
 .plan-e{font-size:1rem;width:21px;text-align:center;flex-shrink:0}
@@ -422,6 +447,7 @@ canvas{width:100%;border-radius:8px;display:block}
     <div class="ntab"     data-v="history"  id="nt-history"> <span class="ti">📅</span>History  </div>
     <div class="ntab"     data-v="food"     id="nt-food">    <span class="ti">🥗</span>Food     </div>
     <div class="ntab"     data-v="plan"     id="nt-plan">    <span class="ti">📋</span>Plan     </div>
+    <div class="ntab"     data-v="owed"     id="nt-owed">    <span class="ti">🤝</span>Owed     </div>
     <div class="ntab"     data-v="learn"    id="nt-learn">   <span class="ti">✨</span>Learn    </div>
     <div class="ntab"     data-v="settings" id="nt-settings"><span class="ti">⚙️</span>Manage   </div>
   </nav>
@@ -564,6 +590,26 @@ canvas{width:100%;border-radius:8px;display:block}
     </div>
   </div>
 </div>
+<!-- ══ OWED VIEW ══ -->
+<div class="view" id="view-owed">
+  <div class="lhero" style="background:linear-gradient(135deg,#f0eefc,#e8f4f0)">
+    <div class="lpill" style="background:var(--lav-lt);color:var(--lav-dk)">🤝 Money I'm Owed</div>
+    <div class="lttl" style="color:var(--lav-dk)">Keep track of what comes back.</div>
+    <div class="lsub">Log money you lend or expenses you cover for others. When they pay you back, mark it as returned and add it to your budget.</div>
+  </div>
+  <div class="sg">
+    <div class="st"><div class="stv" id="owedTotal">$0</div><div class="stl">Total Owed</div></div>
+    <div class="st"><div class="stv" id="owedCount">0</div><div class="stl">Open Loans</div></div>
+    <div class="st"><div class="stv" id="owedReturned">$0</div><div class="stl">Returned</div></div>
+    <div class="st"><div class="stv" id="owedMonth">$0</div><div class="stl">This Month</div></div>
+  </div>
+  <button class="fab" id="addOwedBtn">+ Log Money I'm Owed</button>
+  <div class="slbl">Open</div>
+  <div id="owedOpenList"></div>
+  <div class="slbl" style="margin-top:6px">Returned</div>
+  <div id="owedReturnedList"></div>
+</div>
+
 <!-- ══ PLAN VIEW ══ -->
 <div class="view" id="view-plan">
   <div class="lhero" style="background:linear-gradient(135deg,#eef0fc,#e8f0f8)">
@@ -845,6 +891,53 @@ canvas{width:100%;border-radius:8px;display:block}
   <div class="brow"><button class="cbtn" id="vaultDepCancelBtn">Cancel</button><button class="sbtn" id="vaultDepSaveBtn">Deposit</button></div>
 </div></div>
 
+
+<!-- Owed Modal -->
+<div class="ov" id="ovOwed"><div class="sheet">
+  <div class="shdl"></div><div class="shttl" id="owedTtl">Log Money I'm Owed</div>
+  <input type="hidden" id="fOwedId">
+  <div class="fld"><label class="fl">Person / Who owes you</label>
+    <input class="fi" id="fOwedPerson" type="text" placeholder="e.g. Mom, Alex, Sister..."></div>
+  <div class="fld"><label class="fl">What for</label>
+    <input class="fi" id="fOwedDesc" type="text" placeholder="e.g. Car insurance, Phone bill..."></div>
+  <div class="fld"><label class="fl">Amount ($)</label>
+    <input class="fi big" id="fOwedAmt" type="number" inputmode="decimal" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="fld"><label class="fl">Paid with</label>
+    <select class="fs" id="fOwedMethod">
+      <option value="card">Credit Card</option>
+      <option value="debit">Debit Card</option>
+      <option value="cash">Cash</option>
+      <option value="transfer">Bank Transfer</option>
+    </select></div>
+  <div class="fld"><label class="fl">Date</label>
+    <input class="fi" id="fOwedDate" type="date"></div>
+  <div class="fld"><label class="fl">Do you expect this back?</label>
+    <select class="fs" id="fOwedExpect">
+      <option value="yes">Yes — they'll pay me back</option>
+      <option value="maybe">Maybe — not sure</option>
+      <option value="gift">No — it's a gift / family help</option>
+    </select></div>
+  <div id="owedDelBtn"></div>
+  <div class="brow">
+    <button class="cbtn" id="owedCancelBtn">Cancel</button>
+    <button class="sbtn" id="owedSaveBtn">Save</button>
+  </div>
+</div></div>
+
+<!-- Partial Return Modal -->
+<div class="ov" id="ovOwedReturn"><div class="sheet">
+  <div class="shdl"></div><div class="shttl" id="owedReturnTtl">Mark as Returned</div>
+  <input type="hidden" id="fOwedReturnId">
+  <p style="font-size:.8rem;color:var(--txt2);line-height:1.6;margin-bottom:14px;font-weight:500">
+    How much did they return? This will be added to your available budget automatically.
+  </p>
+  <div class="fld"><label class="fl">Amount Returned ($)</label>
+    <input class="fi big" id="fOwedReturnAmt" type="number" inputmode="decimal" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="brow">
+    <button class="cbtn" id="owedReturnCancelBtn">Cancel</button>
+    <button class="sbtn" id="owedReturnSaveBtn">Mark Returned + Add to Budget</button>
+  </div>
+</div></div>
 
 <div class="toast" id="toast"></div>
 
@@ -1667,6 +1760,146 @@ function checkReward(){
   if(inc>0&&Math.abs(inc-bud)<1){var ck=cmk();if(!S.rewarded[ck]){S.rewarded[ck]=true;saveS();setTimeout(fireConfetti,400);}}
 }
 
+// ===== MONEY I'M OWED
+function getOwed(){
+  try{return JSON.parse(localStorage.getItem('zb_owed')||'[]');}catch(e){return [];}
+}
+function saveOwed(arr){localStorage.setItem('zb_owed',JSON.stringify(arr));}
+
+function openAddOwed(){
+  var ot=g('owedTtl');if(ot)ot.textContent='Log Money I'm Owed';
+  var fi=g('fOwedId');if(fi)fi.value='';
+  ['fOwedPerson','fOwedDesc','fOwedAmt'].forEach(function(id){var el=g(id);if(el)el.value='';});
+  var fd=g('fOwedDate');if(fd)fd.value=new Date().toISOString().split('T')[0];
+  var ob=g('owedDelBtn');if(ob)ob.innerHTML='';
+  openOv('ovOwed');
+  setTimeout(function(){var fp=g('fOwedPerson');if(fp)fp.focus();},350);
+}
+
+function openEditOwed(id){
+  var arr=getOwed();var item=arr.find(function(x){return x.id===id;});if(!item)return;
+  var ot=g('owedTtl');if(ot)ot.textContent='Edit Entry';
+  var fi=g('fOwedId');if(fi)fi.value=id;
+  var fp=g('fOwedPerson');if(fp)fp.value=item.person;
+  var fdesc=g('fOwedDesc');if(fdesc)fdesc.value=item.desc;
+  var fa=g('fOwedAmt');if(fa)fa.value=item.amt;
+  var fm=g('fOwedMethod');if(fm)fm.value=item.method||'card';
+  var fdate=g('fOwedDate');if(fdate)fdate.value=item.date;
+  var fe=g('fOwedExpect');if(fe)fe.value=item.expect||'yes';
+  var ob=g('owedDelBtn');if(ob)ob.innerHTML='<button class="dbtn" data-oid="'+id+'" onclick="delOwed(this.dataset.oid)">Remove entry</button>';
+  openOv('ovOwed');
+}
+
+function saveOwed2(){
+  var fp=g('fOwedPerson');var fa=g('fOwedAmt');var fdesc=g('fOwedDesc');
+  var fm=g('fOwedMethod');var fdate=g('fOwedDate');var fe=g('fOwedExpect');var fi=g('fOwedId');
+  var person=(fp?fp.value.trim():'');if(!person){toast('Enter a name');return;}
+  var amt=parseFloat(fa?fa.value:0);if(!amt||amt<=0){toast('Enter an amount');return;}
+  var arr=getOwed();
+  var id=fi?fi.value:'';
+  if(id){
+    var item=arr.find(function(x){return x.id===id;});
+    if(item){item.person=person;item.desc=(fdesc?fdesc.value.trim():'')||'Expense';item.amt=amt;item.method=fm?fm.value:'card';item.date=fdate?fdate.value:'';item.expect=fe?fe.value:'yes';}
+  }else{
+    arr.push({id:uid(),person:person,desc:(fdesc?fdesc.value.trim():'')||'Expense',amt:amt,method:fm?fm.value:'card',date:fdate?fdate.value:'',expect:fe?fe.value:'yes',returned:false,returnedAmt:0});
+  }
+  saveOwed(arr);closeOv('ovOwed');renderOwed();toast('Saved!');
+}
+
+function delOwed(id){
+  if(!confirm('Remove this entry?'))return;
+  var arr=getOwed().filter(function(x){return x.id!==id;});
+  saveOwed(arr);closeOv('ovOwed');renderOwed();toast('Removed');
+}
+
+function openOwedReturn(id){
+  var arr=getOwed();var item=arr.find(function(x){return x.id===id;});if(!item)return;
+  var rt=g('owedReturnTtl');if(rt)rt.textContent='Returned by '+item.person;
+  var fri=g('fOwedReturnId');if(fri)fri.value=id;
+  var fra=g('fOwedReturnAmt');if(fra)fra.value=item.amt;
+  openOv('ovOwedReturn');
+  setTimeout(function(){var fra2=g('fOwedReturnAmt');if(fra2)fra2.focus();},350);
+}
+
+function saveOwedReturn(){
+  var fri=g('fOwedReturnId');var fra=g('fOwedReturnAmt');
+  var id=fri?fri.value:'';
+  var amt=parseFloat(fra?fra.value:0);
+  if(!amt||amt<=0){toast('Enter the returned amount');return;}
+  var arr=getOwed();
+  var item=arr.find(function(x){return x.id===id;});if(!item)return;
+  item.returned=true;
+  item.returnedAmt=amt;
+  item.returnedDate=new Date().toISOString().slice(0,10);
+  saveOwed(arr);
+  // Add returned amount to budget as a deposit
+  S.deposits.push({id:uid(),amt:amt,desc:'Returned by '+item.person+' ('+item.desc+')',type:'bank',date:new Date().toISOString().slice(0,10)});
+  saveS();
+  closeOv('ovOwedReturn');renderOwed();renderBudget();
+  toast(fmt(amt)+' added back to your budget!');
+}
+
+function renderOwed(){
+  var arr=getOwed();
+  var open=arr.filter(function(x){return !x.returned;});
+  var returned=arr.filter(function(x){return x.returned;});
+  var totalOpen=open.reduce(function(s,x){return s+x.amt;},0);
+  var totalReturned=returned.reduce(function(s,x){return s+(x.returnedAmt||0);},0);
+  var ck=cmk();
+  var thisMonth=arr.filter(function(x){return x.date&&x.date.startsWith(ck);}).reduce(function(s,x){return s+x.amt;},0);
+
+  var ot=g('owedTotal');if(ot)ot.textContent=fmt(totalOpen);
+  var oc=g('owedCount');if(oc)oc.textContent=open.length;
+  var or2=g('owedReturned');if(or2)or2.textContent=fmt(totalReturned);
+  var om=g('owedMonth');if(om)om.textContent=fmt(thisMonth);
+
+  var methodIcon={card:'💳',debit:'🏦',cash:'💵',transfer:'📲'};
+  var expectLabel={yes:'Expects return',maybe:'Maybe',gift:'Gift / Help'};
+
+  function renderItem(item){
+    var dt=item.date?new Date(item.date+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+    var initials=item.person.split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2);
+    return '<div class="owed-card'+(item.returned?' owed-returned':'')+'">'+
+      '<div class="owed-hd">'+
+        '<div class="owed-ico">'+initials+'</div>'+
+        '<div class="owed-info">'+
+          '<div class="owed-person">'+item.person+'</div>'+
+          '<div class="owed-desc">'+item.desc+'</div>'+
+          '<div class="owed-meta">'+
+            '<span class="owed-badge '+(item.method||'card')+'">'+(methodIcon[item.method||'card']||'💳')+' '+(item.method==='card'?'Credit Card':item.method==='debit'?'Debit':item.method==='cash'?'Cash':'Transfer')+'</span>'+
+            '<span class="owed-badge '+(item.expect||'yes')+'">'+(expectLabel[item.expect||'yes'])+'</span>'+
+            (item.returned?'<span class="owed-badge" style="background:var(--mint-lt);color:var(--mint-dk)">Returned '+fmt(item.returnedAmt||0)+'</span>':'')+'</div>'+
+          (dt?'<div class="owed-date">'+dt+'</div>':'')+'</div>'+
+        '<div class="owed-amt">'+
+          '<div class="owed-num">'+fmt(item.amt)+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="owed-acts">'+
+        (!item.returned?'<button class="owed-act ret" data-oid="'+item.id+'" onclick="openOwedReturn(this.dataset.oid)">✓ Mark Returned</button>':'<button class="owed-act" style="opacity:.5;cursor:default">Returned</button>')+
+        '<button class="owed-act" data-oid="'+item.id+'" onclick="openEditOwed(this.dataset.oid)">Edit</button>'+
+      '</div>'+
+    '</div>';
+  }
+
+  var ol=g('owedOpenList');
+  if(ol){
+    if(!open.length){
+      ol.innerHTML='<div class="empty"><div class="ei">🤝</div><p>No open loans.<br>Tap + to log money you're owed.</p></div>';
+    }else{
+      ol.innerHTML=open.sort(function(a,b){return new Date(b.date)-new Date(a.date);}).map(renderItem).join('');
+    }
+  }
+
+  var rl=g('owedReturnedList');
+  if(rl){
+    if(!returned.length){
+      rl.innerHTML='<div style="padding:10px 14px;font-size:.8rem;color:var(--txt3);text-align:center">No returned payments yet.</div>';
+    }else{
+      rl.innerHTML=returned.sort(function(a,b){return new Date(b.returnedDate||b.date)-new Date(a.returnedDate||a.date);}).map(renderItem).join('');
+    }
+  }
+}
+
 // ===== MONTHLY PLAN
 var PLAN_KEY='zb_plan';
 function getPlan(){try{return JSON.parse(localStorage.getItem(PLAN_KEY)||'{}');}catch(e){return {};}}
@@ -1820,7 +2053,7 @@ function go(name){
   var view=g('view-'+name);if(view)view.classList.add('on');
   var tab=g('nt-'+name);if(tab)tab.classList.add('on');
   window.scrollTo(0,0);
-  var renders={budget:renderBudget,expenses:renderExpenses,summary:renderSummary,plan:renderPlan,
+  var renders={budget:renderBudget,expenses:renderExpenses,summary:renderSummary,plan:renderPlan,owed:renderOwed,
     goals:renderGoals,debt:renderDebts,history:renderHistory,food:renderFood,settings:renderSettings};
   if(renders[name])renders[name]();
 }
@@ -1850,6 +2083,7 @@ window.onload=function(){
   renderHistory();
   renderFood();
   renderPlan();
+  renderOwed();
   renderSettings();
   updateHdr();
   snapShot();
@@ -1864,7 +2098,7 @@ window.onload=function(){
   on('themeRow',toggleTheme);
 
   // Nav
-  ['budget','expenses','summary','goals','debt','history','food','plan','learn','settings'].forEach(function(name){
+  ['budget','expenses','summary','goals','debt','history','food','plan','owed','learn','settings'].forEach(function(name){
     on('nt-'+name,function(){go(name);});
   });
 
@@ -1920,6 +2154,13 @@ window.onload=function(){
   on('saveFilesBtn',saveToFiles);
   on('bkBtn',quickBackup);
   on('remFreq',function(){var p=getBkPrefs();var rf=g('remFreq');p.remDays=parseInt(rf?rf.value:'4');saveBkPrefs(p);toast('Reminder saved');});
+
+  // Owed
+  on('addOwedBtn',openAddOwed);
+  on('owedSaveBtn',saveOwed2);
+  on('owedCancelBtn',function(){closeOv('ovOwed');});
+  on('owedReturnSaveBtn',saveOwedReturn);
+  on('owedReturnCancelBtn',function(){closeOv('ovOwedReturn');});
 
   // Plan
   on('planCopyBtn',copyPlanToMonth);
