@@ -1767,7 +1767,7 @@ function getOwed(){
 function saveOwed(arr){localStorage.setItem('zb_owed',JSON.stringify(arr));}
 
 function openAddOwed(){
-  var ot=g('owedTtl');if(ot)ot.textContent='Log Money I'm Owed';
+  var ot=g('owedTtl');if(ot)ot.textContent='Log Money Owed to Me';
   var fi=g('fOwedId');if(fi)fi.value='';
   ['fOwedPerson','fOwedDesc','fOwedAmt'].forEach(function(id){var el=g(id);if(el)el.value='';});
   var fd=g('fOwedDate');if(fd)fd.value=new Date().toISOString().split('T')[0];
@@ -1884,7 +1884,7 @@ function renderOwed(){
   var ol=g('owedOpenList');
   if(ol){
     if(!open.length){
-      ol.innerHTML='<div class="empty"><div class="ei">🤝</div><p>No open loans.<br>Tap + to log money you're owed.</p></div>';
+      ol.innerHTML='<div class="empty"><div class="ei">🤝</div><p>No open loans.<br>Tap + to log money you are owed.</p></div>';
     }else{
       ol.innerHTML=open.sort(function(a,b){return new Date(b.date)-new Date(a.date);}).map(renderItem).join('');
     }
