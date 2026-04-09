@@ -402,6 +402,68 @@ canvas{width:100%;border-radius:8px;display:block}
 .plan-amt{font-family:"Playfair Display",Georgia,serif;font-size:.84rem;font-weight:700;color:var(--txt)}
 .plan-vs{font-size:.67rem;margin-top:1px;font-weight:700}
 .plan-under{color:var(--mint-dk)}.plan-over{color:var(--red-txt)}.plan-eq{color:var(--txt3)}
+.more-menu{background:var(--hbg);border-top:1px solid var(--bdr);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:10px 12px 12px;
+  position:sticky;top:var(--hdr-h,180px);z-index:49}
+.more-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.more-item{display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;
+  padding:11px 8px;cursor:pointer;transition:all .15s;font-size:.68rem;
+  font-weight:700;color:var(--txt2);text-align:center}
+.more-item:active{background:var(--sur);transform:scale(.96)}
+.mi{font-size:1.3rem;line-height:1}
+.nm-banner{background:linear-gradient(135deg,#1e2840,#2a1e50);
+  border:1px solid rgba(155,143,216,.3);border-radius:14px;
+  padding:14px 15px;margin-bottom:10px;position:relative;overflow:hidden}
+.nm-banner::after{content:"🌱";position:absolute;right:12px;top:8px;
+  font-size:2.2rem;opacity:.2;pointer-events:none}
+.nm-ttl{font-family:"Playfair Display",Georgia,serif;font-weight:700;
+  font-size:.95rem;color:#c8b8f0;margin-bottom:3px}
+.nm-sub{font-size:.74rem;color:rgba(200,184,240,.6);font-weight:500;margin-bottom:10px}
+.nm-amt{font-family:"Playfair Display",Georgia,serif;font-weight:700;
+  font-size:1.6rem;color:#fff;margin-bottom:10px}
+.nm-acts{display:flex;gap:7px}
+.nm-act{flex:1;padding:9px;border-radius:9px;font-family:"Nunito",sans-serif;
+  font-size:.78rem;font-weight:800;cursor:pointer;border:none;text-align:center}
+.nm-act.pri{background:linear-gradient(135deg,#9b8fd8,#7b8cd4);color:#fff}
+.nm-act.sec{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);
+  border:1px solid rgba(255,255,255,.15)}
+.nm-act:active{opacity:.85}
+.fund-row{display:flex;align-items:center;padding:10px 14px;
+  border-bottom:1px solid var(--bdr);gap:10px}
+.fund-row:last-child{border-bottom:none}
+.toast{
+.toast{
+.more-menu{background:var(--hbg);border-top:1px solid var(--bdr);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:10px 12px 12px;
+  position:sticky;top:var(--hdr-h,180px);z-index:49}
+.more-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.more-item{display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;
+  padding:11px 8px;cursor:pointer;transition:all .15s;font-size:.68rem;
+  font-weight:700;color:var(--txt2);text-align:center}
+.more-item:active{background:var(--sur);transform:scale(.96)}
+.mi{font-size:1.3rem;line-height:1}
+.nm-banner{background:linear-gradient(135deg,#1e2840,#2a1e50);
+  border:1px solid rgba(155,143,216,.3);border-radius:14px;
+  padding:14px 15px;margin-bottom:10px;position:relative;overflow:hidden}
+.nm-banner::after{content:"🌱";position:absolute;right:12px;top:8px;
+  font-size:2.2rem;opacity:.2;pointer-events:none}
+.nm-ttl{font-family:"Playfair Display",Georgia,serif;font-weight:700;
+  font-size:.95rem;color:#c8b8f0;margin-bottom:3px}
+.nm-sub{font-size:.74rem;color:rgba(200,184,240,.6);font-weight:500;margin-bottom:10px}
+.nm-amt{font-family:"Playfair Display",Georgia,serif;font-weight:700;
+  font-size:1.6rem;color:#fff;margin-bottom:10px}
+.nm-acts{display:flex;gap:7px}
+.nm-act{flex:1;padding:9px;border-radius:9px;font-family:"Nunito",sans-serif;
+  font-size:.78rem;font-weight:800;cursor:pointer;border:none;text-align:center}
+.nm-act.pri{background:linear-gradient(135deg,#9b8fd8,#7b8cd4);color:#fff}
+.nm-act.sec{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);
+  border:1px solid rgba(255,255,255,.15)}
+.nm-act:active{opacity:.85}
+.fund-row{display:flex;align-items:center;padding:10px 14px;
+  border-bottom:1px solid var(--bdr);gap:10px}
+.fund-row:last-child{border-bottom:none}
 .toast{
 .toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
   left:50%;transform:translateX(-50%) translateY(80px);
@@ -468,6 +530,7 @@ canvas{width:100%;border-radius:8px;display:block}
   <div id="cashIndicator" class="cash-indicator" style="display:none">
     <span>💵</span><span>Cash on hand: <strong id="cashOnHandLbl">$0.00</strong></span>
   </div>
+  <div id="nmBanner" style="display:none"></div>
   <div id="catCards"></div>
   <div class="card">
     <div class="chd"><div class="cttl">📋 Money Received This Month</div><div class="csub" id="paycheckTot">$0.00</div></div>
@@ -939,6 +1002,22 @@ canvas{width:100%;border-radius:8px;display:block}
   </div>
 </div></div>
 
+<!-- Next Month Modal -->
+<div class="ov" id="ovNM"><div class="sheet">
+  <div class="shdl"></div>
+  <div class="shttl">Fund Next Month 🌱</div>
+  <p style="font-size:.8rem;color:var(--txt2);line-height:1.6;margin-bottom:14px;font-weight:500">
+    Set aside money now for next month. It stays separate from your current budget and rolls in automatically on the 1st.
+  </p>
+  <div class="fld"><label class="fl">Amount to set aside ($)</label>
+    <input class="fi big" id="fNMAmt" type="number" inputmode="decimal" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="fld"><label class="fl">Description</label>
+    <input class="fi" id="fNMDesc" type="text" placeholder="e.g. May budget fund..."></div>
+  <div class="brow">
+    <button class="cbtn" id="nmCancelBtn">Cancel</button>
+    <button class="sbtn" id="nmSaveBtn">Set Aside for Next Month</button>
+  </div>
+</div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1195,6 +1274,7 @@ function renderBudget(){
           '<span style="color:'+wc+'">'+warn+'</span></div>'+
       '</div></div>';}).join('');
   updateHdr();
+  renderNMBanner();
 }
 function refreshBar(cid){
   var cat=S.cats.find(function(c){return c.id===cid;});if(!cat)return;
@@ -2064,6 +2144,118 @@ function copyPlanToMonth(){
   toast('Plan copied to budget! Now add your money 💜');
 }
 
+// ===== MORE MENU
+function toggleMore(){
+  var m=g('moreMenu');if(!m)return;
+  var isOpen=m.style.display!=='none';
+  m.style.display=isOpen?'none':'block';
+  var nt=g('nt-more');if(nt)nt.classList.toggle('on',!isOpen);
+}
+function closeMore(){
+  var m=g('moreMenu');if(m)m.style.display='none';
+  var nt=g('nt-more');if(nt)nt.classList.remove('on');
+}
+
+// ===== NEXT MONTH FUND
+var NM_KEY='zb_nm';
+function getNM(){try{return JSON.parse(localStorage.getItem(NM_KEY)||'{}');}catch(e){return {};}}
+function saveNM(d){localStorage.setItem(NM_KEY,JSON.stringify(d));}
+
+function openFundNM(){
+  var fa=g('fNMAmt');if(fa)fa.value='';
+  var fd=g('fNMDesc');
+  if(fd){
+    var now=new Date();
+    var next=new Date(now.getFullYear(),now.getMonth()+1,1);
+    var mn=next.toLocaleDateString('en-US',{month:'long'});
+    fd.value=mn+' budget fund';
+  }
+  openOv('ovNM');
+  setTimeout(function(){var fa2=g('fNMAmt');if(fa2)fa2.focus();},350);
+}
+
+function saveNMFund(){
+  var fa=g('fNMAmt');var fd=g('fNMDesc');
+  var amt=parseFloat(fa?fa.value:0);
+  if(!amt||amt<=0){toast('Enter an amount');return;}
+  var desc=(fd?fd.value.trim():'')||'Next month fund';
+  var nm=getNM();
+  var now=new Date();
+  var nextMk=new Date(now.getFullYear(),now.getMonth()+1,1).toISOString().slice(0,7);
+  if(!nm.funds)nm.funds=[];
+  nm.funds.push({id:uid(),amt:amt,desc:desc,date:new Date().toISOString().slice(0,10),forMonth:nextMk});
+  saveNM(nm);
+  closeOv('ovNM');
+  renderNMBanner();
+  toast('Set aside '+fmt(amt)+' for next month!');
+}
+
+function removeNMFund(id){
+  if(!confirm('Remove this fund?'))return;
+  var nm=getNM();
+  nm.funds=(nm.funds||[]).filter(function(f){return f.id!==id;});
+  saveNM(nm);renderNMBanner();toast('Removed');
+}
+
+function getNMTotal(){
+  var nm=getNM();
+  var now=new Date();
+  var nextMk=new Date(now.getFullYear(),now.getMonth()+1,1).toISOString().slice(0,7);
+  return (nm.funds||[]).filter(function(f){return f.forMonth===nextMk;})
+    .reduce(function(s,f){return s+f.amt;},0);
+}
+
+function rollNMIntoMonth(){
+  var nm=getNM();
+  var ck=cmk();
+  var funds=(nm.funds||[]).filter(function(f){return f.forMonth===ck;});
+  if(!funds.length)return;
+  var total=funds.reduce(function(s,f){return s+f.amt;},0);
+  funds.forEach(function(f){
+    S.deposits.push({id:uid(),amt:f.amt,desc:f.desc+' (rolled over)',type:'bank',date:ck+'-01'});
+  });
+  nm.funds=(nm.funds||[]).filter(function(f){return f.forMonth!==ck;});
+  nm.lastRolled=ck;
+  saveNM(nm);saveS();
+  renderBudget();renderNMBanner();
+  toast(fmt(total)+' rolled into your budget!');
+}
+
+function checkNMRollover(){
+  var nm=getNM();
+  if(nm.lastRolled===cmk())return;
+  rollNMIntoMonth();
+}
+
+function renderNMBanner(){
+  var el=g('nmBanner');if(!el)return;
+  var now=new Date();
+  var next=new Date(now.getFullYear(),now.getMonth()+1,1);
+  var nextMk=next.toISOString().slice(0,7);
+  var mn=next.toLocaleDateString('en-US',{month:'long'});
+  var nm=getNM();
+  var funds=(nm.funds||[]).filter(function(f){return f.forMonth===nextMk;});
+  var total=funds.reduce(function(s,f){return s+f.amt;},0);
+  if(!total&&totInc()===0){el.style.display='none';return;}
+  el.style.display='block';
+  var fundsHtml=funds.map(function(f){
+    return '<div class="fund-row">'+
+      '<span class="rlbl">'+f.desc+'</span>'+
+      '<span style="font-weight:700;font-size:.88rem;color:#c8b8f0">'+fmt(f.amt)+'</span>'+
+      '<button class="rbtn" style="color:rgba(255,255,255,.4)" data-fid="'+f.id+'" onclick="removeNMFund(this.dataset.fid)">x</button>'+
+    '</div>';}).join('');
+  el.innerHTML='<div class="nm-banner">'+
+    '<div class="nm-ttl">Funding '+mn+'</div>'+
+    '<div class="nm-sub">Set aside now, rolls in automatically on '+mn+' 1st</div>'+
+    (total>0?'<div class="nm-amt">'+fmt(total)+' ready</div>':'')+
+    (fundsHtml?'<div style="background:rgba(0,0,0,.15);border-radius:10px;margin-bottom:10px">'+fundsHtml+'</div>':'')+
+    '<div class="nm-acts">'+
+      '<button class="nm-act pri" onclick="openFundNM()">+ Add More</button>'+
+      (total>0?'<button class="nm-act sec" onclick="rollNMIntoMonth()">Roll in now</button>':'')+
+    '</div>'+
+  '</div>';
+}
+
 // ===== MODAL HELPERS
 function openOv(id){var el=g(id);if(el)el.classList.add('open');}
 function closeOv(id){var el=g(id);if(el)el.classList.remove('open');}
@@ -2075,6 +2267,7 @@ function go(name){
   document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('on');});
   var view=g('view-'+name);if(view)view.classList.add('on');
   var tab=g('nt-'+name);if(tab)tab.classList.add('on');
+  closeMore();
   window.scrollTo(0,0);
   var renders={budget:renderBudget,expenses:renderExpenses,summary:renderSummary,plan:renderPlan,owed:renderOwed,
     goals:renderGoals,debt:renderDebts,history:renderHistory,food:renderFood,settings:renderSettings};
@@ -2097,6 +2290,8 @@ window.onload=function(){
   var p=getBkPrefs();
   if(p.remDays==null){p.remDays=4;saveBkPrefs(p);}
 
+  checkNMRollover();
+  renderNMBanner();
   renderBudget();
   renderExpenses();
   renderSummary();
@@ -2121,7 +2316,7 @@ window.onload=function(){
   on('themeRow',toggleTheme);
 
   // Nav
-  ['budget','expenses','summary','goals','debt','history','food','plan','owed','learn','settings'].forEach(function(name){
+  ['budget','expenses','summary','goals','debt'].forEach(function(name){
     on('nt-'+name,function(){go(name);});
   });
 
@@ -2184,6 +2379,10 @@ window.onload=function(){
   on('owedCancelBtn',function(){closeOv('ovOwed');});
   on('owedReturnSaveBtn',saveOwedReturn);
   on('owedReturnCancelBtn',function(){closeOv('ovOwedReturn');});
+
+  // Next Month
+  on('nmSaveBtn',saveNMFund);
+  on('nmCancelBtn',function(){closeOv('ovNM');});
 
   // Plan
   on('planCopyBtn',copyPlanToMonth);
