@@ -501,18 +501,23 @@ canvas{width:100%;border-radius:8px;display:block}
   <div class="atrack" style="border-radius:0;margin-top:0"><div class="afill" id="aFill" style="width:0%"></div></div>
   <div class="ameta" style="padding:3px 15px 0"><span id="aLeft">Add money to begin</span><span id="aPct">0%</span></div>
   <nav class="nav">
-    <div class="ntab on"  data-v="budget"   id="nt-budget">  <span class="ti">💰</span>Budget   </div>
-    <div class="ntab"     data-v="expenses" id="nt-expenses"><span class="ti">📝</span>Expenses </div>
-    <div class="ntab"     data-v="summary"  id="nt-summary"> <span class="ti">📊</span>Summary  </div>
-    <div class="ntab"     data-v="goals"    id="nt-goals">   <span class="ti">🎯</span>Goals    </div>
-    <div class="ntab"     data-v="debt"     id="nt-debt">    <span class="ti">💳</span>Debt     </div>
-    <div class="ntab"     data-v="history"  id="nt-history"> <span class="ti">📅</span>History  </div>
-    <div class="ntab"     data-v="food"     id="nt-food">    <span class="ti">🥗</span>Food     </div>
-    <div class="ntab"     data-v="plan"     id="nt-plan">    <span class="ti">📋</span>Plan     </div>
-    <div class="ntab"     data-v="owed"     id="nt-owed">    <span class="ti">🤝</span>Owed     </div>
-    <div class="ntab"     data-v="learn"    id="nt-learn">   <span class="ti">✨</span>Learn    </div>
-    <div class="ntab"     data-v="settings" id="nt-settings"><span class="ti">⚙️</span>Manage   </div>
+    <div class="ntab on" data-v="budget"   id="nt-budget">  <span class="ti">💰</span>Budget   </div>
+    <div class="ntab"    data-v="expenses" id="nt-expenses"><span class="ti">📝</span>Expenses </div>
+    <div class="ntab"    data-v="summary"  id="nt-summary"> <span class="ti">📊</span>Summary  </div>
+    <div class="ntab"    data-v="goals"    id="nt-goals">   <span class="ti">🔒</span>Vault    </div>
+    <div class="ntab"    data-v="debt"     id="nt-debt">    <span class="ti">💳</span>Debt     </div>
+    <div class="ntab"    id="nt-more" onclick="toggleMore()"><span class="ti">☰</span>More     </div>
   </nav>
+  <div id="moreMenu" class="more-menu" style="display:none">
+    <div class="more-grid">
+      <div class="more-item" onclick="go('history');toggleMore()"><span class="mi">📅</span><span>History</span></div>
+      <div class="more-item" onclick="go('food');toggleMore()">   <span class="mi">🥗</span><span>Food</span></div>
+      <div class="more-item" onclick="go('plan');toggleMore()">   <span class="mi">📋</span><span>Plan</span></div>
+      <div class="more-item" onclick="go('owed');toggleMore()">   <span class="mi">🤝</span><span>Owed</span></div>
+      <div class="more-item" onclick="go('learn');toggleMore()">  <span class="mi">✨</span><span>Learn</span></div>
+      <div class="more-item" onclick="go('settings');toggleMore()"><span class="mi">⚙️</span><span>Manage</span></div>
+    </div>
+  </div>
 </header>
 <main class="views">
 <div class="view on" id="view-budget">
