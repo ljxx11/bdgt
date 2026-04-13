@@ -1166,7 +1166,9 @@ function totBank(){
 }
 function totCash(){
   var ck=cmk();
-  return S.deposits.filter(function(d){return d.date&&d.date.startsWith(ck)&&d.type==='cash';}).reduce(function(s,d){return s+d.amt;},0);
+  var cashIn=S.deposits.filter(function(d){return d.date&&d.date.startsWith(ck)&&d.type==='cash';}).reduce(function(s,d){return s+d.amt;},0);
+  var cashOut=S.exp.filter(function(e){return e.date&&e.date.startsWith(ck)&&e.payMethod==='cash';}).reduce(function(s,e){return s+e.amt;},0);
+  return Math.max(0,cashIn-cashOut);
 }
 function totBud(){return S.cats.reduce(function(s,c){return s+c.items.reduce(function(s2,i){return s2+(+S.bud[i.id]||0);},0);},0);}
 function totSpent(){return curExp().reduce(function(s,e){return s+e.amt;},0);}
