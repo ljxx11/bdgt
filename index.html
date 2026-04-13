@@ -438,11 +438,21 @@ canvas{width:100%;border-radius:8px;display:block}
   width:34px;height:34px;font-size:1.3rem;color:var(--txt2);cursor:pointer;
   display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .anavbtn:active{background:var(--bg3)}
+.hdr-stats{display:flex;align-items:center;background:rgba(0,0,0,.2);border-radius:10px;padding:9px 12px;gap:4px;margin-bottom:0}
+.hdr-stat{text-align:center;flex:1}
+.hdr-stat-val{font-size:.9rem;font-weight:700;color:#fff;line-height:1}
+.hdr-stat-lbl{font-size:.54rem;color:rgba(255,255,255,.45);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.hdr-divider{width:1px;height:28px;background:rgba(255,255,255,.12);flex-shrink:0}
 .toast{
 .anavbtn{background:var(--sur);border:1px solid var(--bdr2);border-radius:8px;
   width:34px;height:34px;font-size:1.3rem;color:var(--txt2);cursor:pointer;
   display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .anavbtn:active{background:var(--bg3)}
+.hdr-stats{display:flex;align-items:center;background:rgba(0,0,0,.2);border-radius:10px;padding:9px 12px;gap:4px;margin-bottom:0}
+.hdr-stat{text-align:center;flex:1}
+.hdr-stat-val{font-size:.9rem;font-weight:700;color:#fff;line-height:1}
+.hdr-stat-lbl{font-size:.54rem;color:rgba(255,255,255,.45);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.hdr-divider{width:1px;height:28px;background:rgba(255,255,255,.12);flex-shrink:0}
 .toast{
 .more-menu{background:var(--hbg);border-top:1px solid var(--bdr);
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:10px 12px 12px;
@@ -478,11 +488,21 @@ canvas{width:100%;border-radius:8px;display:block}
   width:34px;height:34px;font-size:1.3rem;color:var(--txt2);cursor:pointer;
   display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .anavbtn:active{background:var(--bg3)}
+.hdr-stats{display:flex;align-items:center;background:rgba(0,0,0,.2);border-radius:10px;padding:9px 12px;gap:4px;margin-bottom:0}
+.hdr-stat{text-align:center;flex:1}
+.hdr-stat-val{font-size:.9rem;font-weight:700;color:#fff;line-height:1}
+.hdr-stat-lbl{font-size:.54rem;color:rgba(255,255,255,.45);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.hdr-divider{width:1px;height:28px;background:rgba(255,255,255,.12);flex-shrink:0}
 .toast{
 .anavbtn{background:var(--sur);border:1px solid var(--bdr2);border-radius:8px;
   width:34px;height:34px;font-size:1.3rem;color:var(--txt2);cursor:pointer;
   display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .anavbtn:active{background:var(--bg3)}
+.hdr-stats{display:flex;align-items:center;background:rgba(0,0,0,.2);border-radius:10px;padding:9px 12px;gap:4px;margin-bottom:0}
+.hdr-stat{text-align:center;flex:1}
+.hdr-stat-val{font-size:.9rem;font-weight:700;color:#fff;line-height:1}
+.hdr-stat-lbl{font-size:.54rem;color:rgba(255,255,255,.45);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.hdr-divider{width:1px;height:28px;background:rgba(255,255,255,.12);flex-shrink:0}
 .toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
   left:50%;transform:translateX(-50%) translateY(80px);
   background:var(--txt);color:var(--bg);border-radius:20px;padding:8px 16px;
@@ -510,6 +530,24 @@ canvas{width:100%;border-radius:8px;display:block}
       <div class="avail-amt" id="availAmt">$0.00</div>
       <div class="zpill under" id="zPill">Unallocated</div>
     </div>
+    <div class="hdr-stats" style="margin-bottom:10px">
+      <div class="hdr-stat"><div class="hdr-stat-val" id="hdrReceived">$0</div><div class="hdr-stat-lbl">Received</div></div>
+      <div class="hdr-divider"></div>
+      <div class="hdr-stat"><div class="hdr-stat-val" id="hdrAllocated">$0</div><div class="hdr-stat-lbl">In Envelopes</div></div>
+      <div class="hdr-divider"></div>
+      <div class="hdr-stat"><div class="hdr-stat-val" id="hdrSpent">$0</div><div class="hdr-stat-lbl">Spent</div></div>
+      <div class="hdr-divider"></div>
+      <div class="hdr-stat"><div class="hdr-stat-val" id="hdrRemaining">$0</div><div class="hdr-stat-lbl">Remaining</div></div>
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:.62rem;color:rgba(255,255,255,.5);font-weight:600;letter-spacing:.06em">Spent vs envelopes</span>
+        <span style="font-size:.62rem;color:rgba(255,255,255,.5);font-weight:600" id="hdrSpentPct">0%</span>
+      </div>
+      <div style="height:4px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden">
+        <div id="hdrSpentBar" style="height:100%;width:0%;background:linear-gradient(90deg,#98ccc0,#70b0a8);border-radius:99px"></div>
+      </div>
+    </div>
     <div class="avail-chips">
       <div class="avail-chip bank" id="bankChip">Bank: $0</div>
       <div class="avail-chip cash" id="cashChip">Cash: $0</div>
@@ -530,7 +568,7 @@ canvas{width:100%;border-radius:8px;display:block}
     <div class="more-grid">
       <div class="more-item" onclick="go('analytics');toggleMore()"><span class="mi">📈</span><span>Analytics</span></div>
       <div class="more-item" onclick="go('history');toggleMore()"><span class="mi">📅</span><span>History</span></div>
-      <div class="more-item" onclick="go('food');toggleMore()">   <span class="mi">🥗</span><span>Food</span></div>
+      
       <div class="more-item" onclick="go('plan');toggleMore()">   <span class="mi">📋</span><span>Plan</span></div>
       <div class="more-item" onclick="go('owed');toggleMore()">   <span class="mi">🤝</span><span>Owed</span></div>
       <div class="more-item" onclick="go('learn');toggleMore()">  <span class="mi">✨</span><span>Learn</span></div>
@@ -551,6 +589,15 @@ canvas{width:100%;border-radius:8px;display:block}
     <button class="bact" id="bkBtn">Back up</button>
   </div>
   <div id="roNote" class="rnote" style="display:none"><span>🔄</span><span id="roTxt"></span></div>
+  <div class="card" style="margin-bottom:10px">
+    <div class="chd"><div class="cttl">📝 Month Note</div><div class="csub" id="noteMonth"></div></div>
+    <div style="padding:4px 14px 12px">
+      <textarea id="monthNote" rows="2"
+        style="width:100%;background:transparent;border:none;resize:none;font-family:'Nunito',sans-serif;font-size:.84rem;color:var(--txt);outline:none;line-height:1.6"
+        placeholder="How is this month going? Notes for your future self..."
+        oninput="saveMonthNote(this.value)"></textarea>
+    </div>
+  </div>
   <div id="cashIndicator" class="cash-indicator" style="display:none">
     <span>💵</span><span>Cash on hand: <strong id="cashOnHandLbl">$0.00</strong></span>
   </div>
@@ -564,13 +611,13 @@ canvas{width:100%;border-radius:8px;display:block}
 <div class="view" id="view-expenses">
   <button class="fab" id="logExpBtn">＋ Log an Expense</button>
   <div class="card" style="margin-bottom:10px">
-    <div class="chd"><div class="cttl">📅 This Week</div><div class="csub" id="wkPct">—</div></div>
+    <div class="chd"><div class="cttl">Today</div><div class="csub" id="todayDate"></div></div>
     <div style="padding:8px 14px 12px">
-      <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--txt2);font-weight:600;margin-bottom:6px">
-        <span>Spent <span id="wkSpent" style="color:var(--txt);font-weight:800">$0</span></span>
-        <span>of <span id="wkBudget">$0</span> weekly</span>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
+        <span style="font-size:1.2rem;font-weight:700;color:var(--txt)" id="wkSpent">$0.00</span>
+        <span style="font-size:.75rem;color:var(--txt3);font-weight:600" id="wkPct">0 transactions</span>
       </div>
-      <div class="btrack"><div class="bfill" id="wkBar" style="width:0%;background:linear-gradient(90deg,var(--lav),var(--peri))"></div></div>
+      <div style="font-size:.74rem;color:var(--txt3);font-weight:500;line-height:1.5" id="wkBudget">No expenses logged today</div>
     </div>
   </div>
   <div class="sg">
@@ -781,39 +828,28 @@ canvas{width:100%;border-radius:8px;display:block}
 </div>
 
 <div class="view" id="view-learn">
-  <div class="lhero">
-    <div class="lpill">Zero-Based Budgeting</div>
-    <div class="lttl">Give every dollar a job.</div>
-    <div class="lsub">Income minus all allocations equals exactly zero — not because you're broke, but because every dollar has been intentionally assigned a purpose.</div>
-  </div>
-  <div class="lquote">
-    <div class="qtxt">"A budget is telling your money where to go instead of wondering where it went."</div>
-    <div class="qattr">— Dave Ramsey</div>
-  </div>
-  <div class="slbl">The 5-Step Method</div>
-  <div class="lstep"><div class="snum">1</div><div><div class="sttl">Enter your total income</div><div class="sdesc">Every dollar coming in this month — salary, freelance, side hustles, everything.</div></div></div>
-  <div class="lstep"><div class="snum">2</div><div><div class="sttl">Pay yourself first</div><div class="sdesc">Before bills, before fun — allocate to savings first. Your future self is the most important payee.</div></div></div>
-  <div class="lstep"><div class="snum">3</div><div><div class="sttl">Assign every remaining dollar</div><div class="sdesc">Go through every category until "Left to Allocate" shows $0.00.</div></div></div>
-  <div class="lstep"><div class="snum">4</div><div><div class="sttl">Track actual spending</div><div class="sdesc">Log each expense as you go. Compare actuals to your plan — this is where habits shift.</div></div></div>
-  <div class="lstep"><div class="snum">5</div><div><div class="sttl">Reset & refine each month</div><div class="sdesc">Build a fresh budget every month. Each cycle you'll get more accurate.</div></div></div>
-  <div class="slbl" style="margin-top:13px">Core Principles</div>
-  <div class="lrule"><div class="rico">🎯</div><div><div class="rttl">Zero doesn't mean broke</div><div class="rdesc">Every dollar has a destination. You're not left with nothing — you're left with a plan.</div></div></div>
-  <div class="lrule"><div class="rico">💰</div><div><div class="rttl">Savings is a mandatory expense</div><div class="rdesc">Budget for savings first, spend the rest after. It's not what's left over — it's line item #1.</div></div></div>
-  <div class="lrule"><div class="rico">🔄</div><div><div class="rttl">Every month starts fresh</div><div class="rdesc">Build a new budget based on that month's actual income. Realistic and always current.</div></div></div>
-  <div class="lrule"><div class="rico">📊</div><div><div class="rttl">Awareness changes everything</div><div class="rdesc">Most overspending happens on autopilot. Tracking each expense builds the awareness that rewires habits.</div></div></div>
-  <div class="lrule"><div class="rico">🌱</div><div><div class="rttl">Progress over perfection</div><div class="rdesc">Your first budget won't be perfect. Each month you'll get more accurate and more confident.</div></div></div>
-  <div class="lrule"><div class="rico">✨</div><div><div class="rttl">Intention, not restriction</div><div class="rdesc">It's about consciously choosing where your money goes — including guilt-free joy spending.</div></div></div>
-  <div class="slbl" style="margin-top:13px">Daily Mantras</div>
-  <div class="affirm"><div class="atxt">"I am in control of my money. My money is not in control of me."</div></div>
-  <div class="affirm"><div class="atxt">"Every dollar I save today is a gift to my future self."</div></div>
-  <div class="affirm"><div class="atxt">"I don't have to be perfect — I just have to keep going."</div></div>
-  <div class="affirm"><div class="atxt">"Financial freedom is built one intentional decision at a time."</div></div>
-  <div class="affirm"><div class="atxt">"I deserve a life where I'm not stressed about money."</div></div>
-  <div class="lquote" style="margin-top:3px">
-    <div class="qtxt">"You must gain control over your money or the lack of it will forever control you."</div>
-    <div class="qattr">— Dave Ramsey</div>
-  </div>
+  <div class="lhero"><div class="lpill">Quick Guide</div><div class="lttl">Your cheat sheet.</div><div class="lsub">Everything you need to remember, in one place.</div></div>
+  <div class="slbl">The Monthly Flow</div>
+  <div class="lstep"><div class="snum">1</div><div><div class="sttl">Add your money</div><div class="sdesc">Every time money lands in your bank or hand, tap + Add Money. Only add what you actually have.</div></div></div>
+  <div class="lstep"><div class="snum">2</div><div><div class="sttl">Fill your envelopes</div><div class="sdesc">Type amounts into each category until Left to Allocate hits $0. Every dollar needs a job.</div></div></div>
+  <div class="lstep"><div class="snum">3</div><div><div class="sttl">Log every expense</div><div class="sdesc">As you spend, tap + and log it with the right category and payment method.</div></div></div>
+  <div class="lstep"><div class="snum">4</div><div><div class="sttl">Check in regularly</div><div class="sdesc">Glance at Summary to see which envelopes are running low. Adjust if needed.</div></div></div>
+  <div class="lstep"><div class="snum">5</div><div><div class="sttl">Fund next month early</div><div class="sdesc">Use Fund Next Month in the Budget tab to set money aside. It rolls in automatically on the 1st.</div></div></div>
+  <div class="slbl" style="margin-top:13px">Key Rules</div>
+  <div class="lrule"><div class="rico">💳</div><div><div class="rttl">Credit card = log it now</div><div class="rdesc">Log the expense the moment you swipe, not when the bill arrives.</div></div></div>
+  <div class="lrule"><div class="rico">🤝</div><div><div class="rttl">Lending money</div><div class="rdesc">Use the Owed tab. When they pay back, it auto-adds to your budget.</div></div></div>
+  <div class="lrule"><div class="rico">🔒</div><div><div class="rttl">Vault is untouchable</div><div class="rdesc">Savings in your Vault never count as spendable budget.</div></div></div>
+  <div class="lrule"><div class="rico">💵</div><div><div class="rttl">Cash expenses</div><div class="rdesc">Pick Cash as payment method so your cash balance stays accurate.</div></div></div>
+  <div class="lrule"><div class="rico">🏦</div><div><div class="rttl">Auto savings transfer</div><div class="rdesc">Add full deposit, allocate to savings category, deposit same amount in Vault.</div></div></div>
+  <div class="lrule"><div class="rico">💾</div><div><div class="rttl">Backup regularly</div><div class="rdesc">Go to Manage and download your CSV every few days.</div></div></div>
+  <div class="slbl" style="margin-top:13px">Mantras</div>
+  <div class="affirm"><div class="atxt">Merezco estabilidad financiera.</div></div>
+  <div class="affirm"><div class="atxt">Cada peso tiene un proposito.</div></div>
+  <div class="affirm"><div class="atxt">Soy capaz de construir mi futuro.</div></div>
+  <div class="affirm"><div class="atxt">El control de mi dinero es el control de mi vida.</div></div>
+  <div class="affirm"><div class="atxt">Soy disciplinada, constante y abundante.</div></div>
 </div>
+
 <div class="view" id="view-settings">
   <div class="card">
     <div class="chd"><div class="cttl">🗂️ Categories</div></div>
@@ -1166,9 +1202,9 @@ function totBank(){
 }
 function totCash(){
   var ck=cmk();
-  var cashIn=S.deposits.filter(function(d){return d.date&&d.date.startsWith(ck)&&d.type==='cash';}).reduce(function(s,d){return s+d.amt;},0);
-  var cashOut=S.exp.filter(function(e){return e.date&&e.date.startsWith(ck)&&e.payMethod==='cash';}).reduce(function(s,e){return s+e.amt;},0);
-  return Math.max(0,cashIn-cashOut);
+  var cin=S.deposits.filter(function(d){return d.date&&d.date.startsWith(ck)&&d.type==='cash';}).reduce(function(s,d){return s+d.amt;},0);
+  var cout=S.exp.filter(function(e){return e.date&&e.date.startsWith(ck)&&e.payMethod==='cash';}).reduce(function(s,e){return s+e.amt;},0);
+  return Math.max(0,cin-cout);
 }
 function totBud(){return S.cats.reduce(function(s,c){return s+c.items.reduce(function(s2,i){return s2+(+S.bud[i.id]||0);},0);},0);}
 function totSpent(){return curExp().reduce(function(s,e){return s+e.amt;},0);}
@@ -1211,10 +1247,16 @@ function updateHdr(){
   // Chips show bank/cash totals for reference
   var bc=g('bankChip');if(bc)bc.textContent='Bank: '+fmtS(bank);
   var cc=g('cashChip');if(cc)cc.textContent='Cash: '+fmtS(cash);
-
   var ci=g('cashIndicator');var chl=g('cashOnHandLbl');
   if(ci){ci.style.display=cash>0?'flex':'none';}
   if(chl)chl.textContent=fmt(cash);
+  var spent=totSpent();var remaining=bud-spent;var spentPct=bud>0?Math.min(spent/bud*100,100):0;
+  var hr=g('hdrReceived');if(hr)hr.textContent=fmtS(inc);
+  var ha=g('hdrAllocated');if(ha)ha.textContent=fmtS(bud);
+  var hs=g('hdrSpent');if(hs)hs.textContent=fmtS(spent);
+  var hrem=g('hdrRemaining');if(hrem){hrem.textContent=fmtS(Math.abs(remaining));hrem.style.color=remaining<0?'#f4a0b0':remaining===0?'#98ccc0':'#fff';}
+  var hsb=g('hdrSpentBar');if(hsb){hsb.style.width=spentPct.toFixed(1)+'%';hsb.style.background=spentPct>=100?'linear-gradient(90deg,#f4a0b0,#d480a0)':'linear-gradient(90deg,#98ccc0,#70b0a8)';}
+  var hsp=g('hdrSpentPct');if(hsp)hsp.textContent=spentPct.toFixed(0)+'% of envelopes spent';
 
   // Progress bar
   var af=g('aFill');if(af)af.style.width=pct.toFixed(1)+'%';
@@ -1306,8 +1348,19 @@ function saveMoney(){
 }
 
 // ===== BUDGET
+function saveMonthNote(val){
+  var ck=cmk();
+  if(!S.hist[ck])S.hist[ck]={income:0,budgeted:0,spent:0,saved:0,date:new Date().toISOString()};
+  S.hist[ck].note=val;saveS();
+}
+function loadMonthNote(){
+  var ck=cmk();
+  var nm=g('noteMonth');if(nm)nm.textContent=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  var ta=g('monthNote');if(ta){var snap=S.hist[ck];ta.value=(snap&&snap.note)||'';}
+}
 function renderBudget(){
   applyRollover();
+  loadMonthNote();
   renderPaycheckHist();
   var cc=g('catCards');if(!cc)return;
   cc.innerHTML=S.cats.map(function(cat){
@@ -1460,16 +1513,14 @@ function renderExpenses(){
   var ea=g('eAvg');if(ea)ea.textContent=exp.length?fmtS(totSpent()/exp.length):'$0';
   var top=S.cats.map(function(c){return{e:c.e,s:catSpent(c.id)};}).sort(function(a,b){return b.s-a.s;});
   var etop=g('eTop');if(etop)etop.textContent=top[0]&&top[0].s>0?top[0].e:'--';
-  var now=new Date(),dow=now.getDay();
-  var ws=new Date(now);ws.setDate(now.getDate()-dow);
-  var wk=ws.toISOString().slice(0,10);
-  var wexp=S.exp.filter(function(e){return e.date>=wk;});
-  var wsp=wexp.reduce(function(s,e){return s+e.amt;},0);
-  var wb=totBud()/4.33;var wp=wb>0?Math.min(wsp/wb*100,100):0;var wo=wsp>wb&&wb>0;
-  var wks=g('wkSpent');if(wks)wks.textContent=fmt(wsp);
-  var wkb=g('wkBudget');if(wkb)wkb.textContent=fmt(wb);
-  var wkp=g('wkPct');if(wkp)wkp.textContent=wp.toFixed(0)+'% of week';
-  var wkbar=g('wkBar');if(wkbar){wkbar.style.width=wp+'%';wkbar.style.background=wo?'linear-gradient(90deg,#f4a0b0,#d480a0)':'linear-gradient(90deg,var(--lav),var(--peri))';}
+    var now=new Date();
+  var today=now.toISOString().slice(0,10);
+  var todayExp=S.exp.filter(function(e){return e.date===today;});
+  var todaySpent=todayExp.reduce(function(s,e){return s+e.amt;},0);
+  var td=g('todayDate');if(td)td.textContent=now.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  var wks=g('wkSpent');if(wks)wks.textContent=fmt(todaySpent);
+  var wkp=g('wkPct');if(wkp)wkp.textContent=todayExp.length+(todayExp.length===1?' transaction':' transactions');
+  var wkb=g('wkBudget');if(wkb){if(!todayExp.length){wkb.textContent='No expenses logged today';}else{wkb.textContent=todayExp.slice(0,3).map(function(e){return e.desc;}).join(', ')+(todayExp.length>3?' +more':'');}}
   var list=g('expList');if(!list)return;
   if(!exp.length){list.innerHTML='<div class="empty"><div class="ei">🌸</div><p>No expenses yet this month.<br>Tap + to log one!</p></div>';return;}
   list.innerHTML=exp.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);}).map(function(e){
@@ -2326,86 +2377,35 @@ function renderNMBanner(){
 // ===== ANALYTICS
 var _aMk=null;
 function aMk(){return _aMk||cmk();}
-
-function aInc(mk2){
-  var snap=S.hist[mk2];
-  if(snap)return snap.income||0;
-  if(mk2===cmk())return totInc();
-  return 0;
-}
-function aSpentForMonth(mk2){
-  if(mk2===cmk())return totSpent();
-  var snap=S.hist[mk2];
-  return snap?snap.spent||0:0;
-}
-function aExpForMonth(mk2){
-  return S.exp.filter(function(e){return e.date&&e.date.startsWith(mk2);});
-}
-function aCatSpentForMonth(catId,mk2){
-  return aExpForMonth(mk2).filter(function(e){return e.catId===catId;}).reduce(function(s,e){return s+e.amt;},0);
-}
-
+function aInc(mk2){var snap=S.hist[mk2];if(snap)return snap.income||0;if(mk2===cmk())return totInc();return 0;}
+function aSpentForMonth(mk2){if(mk2===cmk())return totSpent();var snap=S.hist[mk2];return snap?snap.spent||0:0;}
+function aExpForMonth(mk2){return S.exp.filter(function(e){return e.date&&e.date.startsWith(mk2);});}
+function aCatSpentForMonth(catId,mk2){return aExpForMonth(mk2).filter(function(e){return e.catId===catId;}).reduce(function(s,e){return s+e.amt;},0);}
 function renderAnalytics(){
-  var mk2=aMk();
-  var d=new Date(mk2+'-15');
-  var lbl=d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  var nl=g('aNavLbl');if(nl)nl.textContent=lbl;
-
-  var inc=aInc(mk2);
-  var spent=aSpentForMonth(mk2);
-  var net=inc-spent;
-
+  var mk2=aMk(),d=new Date(mk2+'-15');
+  var nl=g('aNavLbl');if(nl)nl.textContent=d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  var inc=aInc(mk2),spent=aSpentForMonth(mk2),net=inc-spent;
   var ai=g('aInc');if(ai)ai.textContent=fmt(inc);
   var as2=g('aSpent');if(as2)as2.textContent=fmt(spent);
-  var an=g('aNet');
-  if(an){
-    an.textContent=fmt(Math.abs(net));
-    an.style.color=net>=0?'var(--mint-dk)':'var(--red-txt)';
-  }
-
-  var cats=S.cats.map(function(cat){
-    var s=aCatSpentForMonth(cat.id,mk2);
-    return{id:cat.id,e:cat.e,label:cat.label,color:cat.color,spent:s};
-  }).filter(function(c){return c.spent>0;}).sort(function(a,b){return b.spent-a.spent;});
-
-  drawPieChart(cats,spent);
-  renderPieLegend(cats,spent);
+  var an=g('aNet');if(an){an.textContent=fmt(Math.abs(net));an.style.color=net>=0?'var(--mint-dk)':'var(--red-txt)';}
+  var cats=S.cats.map(function(cat){return{id:cat.id,e:cat.e,label:cat.label,color:cat.color,spent:aCatSpentForMonth(cat.id,mk2)};}).filter(function(c){return c.spent>0;}).sort(function(a,b){return b.spent-a.spent;});
+  drawPieChart(cats,spent);renderPieLegend(cats,spent);
 }
-
 function drawPieChart(cats,total){
   var canvas=g('pieChart');if(!canvas)return;
-  var ctx=canvas.getContext('2d');
-  var W=200;ctx.clearRect(0,0,W,W);
-  if(!cats.length||total===0){
-    ctx.fillStyle='#e0ddf0';
-    ctx.beginPath();ctx.arc(W/2,W/2,W/2-4,0,Math.PI*2);ctx.fill();
-    return;
-  }
-  var cx=W/2,cy=W/2,r=W/2-6,ir=W/2-34;
-  var start=-Math.PI/2;
-  cats.forEach(function(cat){
-    var slice=(cat.spent/total)*Math.PI*2;
-    ctx.beginPath();ctx.moveTo(cx,cy);
-    ctx.arc(cx,cy,r,start,start+slice);
-    ctx.closePath();ctx.fillStyle=cat.color;ctx.fill();
-    start+=slice;
-  });
+  var ctx=canvas.getContext('2d'),W=200;ctx.clearRect(0,0,W,W);
+  if(!cats.length||total===0){ctx.fillStyle='#e0ddf0';ctx.beginPath();ctx.arc(W/2,W/2,W/2-4,0,Math.PI*2);ctx.fill();return;}
+  var cx=W/2,cy=W/2,r=W/2-6,ir=W/2-34,start=-Math.PI/2;
+  cats.forEach(function(cat){var slice=(cat.spent/total)*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,start+slice);ctx.closePath();ctx.fillStyle=cat.color;ctx.fill();start+=slice;});
   ctx.beginPath();ctx.arc(cx,cy,ir,0,Math.PI*2);
   var dark=document.documentElement.getAttribute('data-theme')==='dark';
-  ctx.fillStyle=dark?'#1e1840':'#fff';
-  ctx.fill();
-  ctx.fillStyle=dark?'#ece8fc':'#2a2040';
-  ctx.font='700 13px Nunito,sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(fmt(total).replace('.00',''),cx,cy);
+  ctx.fillStyle=dark?'#1e1840':'#fff';ctx.fill();
+  ctx.fillStyle=dark?'#ece8fc':'#2a2040';ctx.font='700 13px Nunito,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(fmt(total).replace('.00',''),cx,cy);
 }
-
 function renderPieLegend(cats,total){
   var el=g('pieLegend');if(!el)return;
-  if(!cats.length){
-    el.innerHTML='<div style="text-align:center;font-size:.8rem;color:var(--txt3);padding:8px">No expenses this month</div>';
-    return;
-  }
+  if(!cats.length){el.innerHTML='<div style="text-align:center;font-size:.8rem;color:var(--txt3);padding:8px">No expenses this month</div>';return;}
   el.innerHTML=cats.map(function(cat){
     var pct=total>0?(cat.spent/total*100).toFixed(0):0;
     return '<div style="display:flex;align-items:center;gap:9px">'+
@@ -2415,14 +2415,7 @@ function renderPieLegend(cats,total){
       '<div style="font-size:.84rem;font-weight:700;color:var(--txt);min-width:55px;text-align:right">'+fmt(cat.spent)+'</div>'+
     '</div>';}).join('');
 }
-
-function aNavigate(dir){
-  var mk2=aMk();
-  var d=new Date(mk2+'-15');
-  d.setMonth(d.getMonth()+dir);
-  _aMk=d.toISOString().slice(0,7);
-  renderAnalytics();
-}
+function aNavigate(dir){var d=new Date(aMk()+'-15');d.setMonth(d.getMonth()+dir);_aMk=d.toISOString().slice(0,7);renderAnalytics();}
 
 // ===== MODAL HELPERS
 function openOv(id){var el=g(id);if(el)el.classList.add('open');}
