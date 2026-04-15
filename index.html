@@ -1425,15 +1425,65 @@ window.onload = function() {
 
   renderAll();
 
-  // PWA service worker
+  // ── PWA: canvas-drawn icon + manifest + service worker ──
+  function makePigIcon(size) {
+    var c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    var ctx = c.getContext('2d');
+    var r = size / 2;
+    ctx.beginPath(); ctx.arc(r,r,r,0,Math.PI*2); ctx.fillStyle='#a855f7'; ctx.fill();
+    ctx.beginPath(); ctx.arc(r,r,r*0.82,0,Math.PI*2); ctx.fillStyle='#c084fc'; ctx.fill();
+    ctx.beginPath(); ctx.arc(r,r*1.05,r*0.52,0,Math.PI*2); ctx.fillStyle='#fda4af'; ctx.fill();
+    ctx.beginPath(); ctx.arc(r-r*0.38,r*0.62,r*0.18,0,Math.PI*2); ctx.fillStyle='#fda4af'; ctx.fill();
+    ctx.beginPath(); ctx.arc(r+r*0.38,r*0.62,r*0.18,0,Math.PI*2); ctx.fillStyle='#fda4af'; ctx.fill();
+    ctx.beginPath(); ctx.arc(r-r*0.38,r*0.62,r*0.10,0,Math.PI*2); ctx.fillStyle='#fb7185'; ctx.fill();
+    ctx.beginPath(); ctx.arc(r+r*0.38,r*0.62,r*0.10,0,Math.PI*2); ctx.fillStyle='#fb7185'; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r,r*1.18,r*0.26,r*0.18,0,0,Math.PI*2); ctx.fillStyle='#fb7185'; ctx.fill();
+    ctx.beginPath(); ctx.arc(r-r*0.12,r*1.18,r*0.055,0,Math.PI*2); ctx.fillStyle='#be123c'; ctx.fill();
+    ctx.beginPath(); ctx.arc(r+r*0.12,r*1.18,r*0.055,0,Math.PI*2); ctx.fillStyle='#be123c'; ctx.fill();
+    ctx.beginPath(); ctx.arc(r-r*0.22,r*0.88,r*0.07,0,Math.PI*2); ctx.fillStyle='#1e1b4b'; ctx.fill();
+    ctx.beginPath(); ctx.arc(r+r*0.22,r*0.88,r*0.07,0,Math.PI*2); ctx.fillStyle='#1e1b4b'; ctx.fill();
+    ctx.beginPath(); ctx.arc(r-r*0.19,r*0.855,r*0.025,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
+    ctx.beginPath(); ctx.arc(r+r*0.25,r*0.855,r*0.025,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
+    return c.toDataURL('image/png');
+  }
+  var icon192 = makePigIcon(192);
+  var icon512 = makePigIcon(512);
+
+  var manifest = {
+    name:'Piggy Bank', short_name:'Piggy Bank',
+    description:'Zero-based budgeting envelope app',
+    start_url:'./', display:'standalone', orientation:'portrait',
+    background_color:'#1a0e2e', theme_color:'#a855f7',
+    icons:[
+      {src:icon192,sizes:'192x192',type:'image/png',purpose:'any maskable'},
+      {src:icon512,sizes:'512x512',type:'image/png',purpose:'any maskable'}
+    ]
+  };
+  var mLink = document.createElement('link');
+  mLink.rel = 'manifest';
+  mLink.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'}));
+  document.head.appendChild(mLink);
+
+  var faviconEl = document.createElement('link');
+  faviconEl.rel = 'icon'; faviconEl.href = icon192;
+  document.head.appendChild(faviconEl);
+
+  var appleEl = document.createElement('link');
+  appleEl.rel = 'apple-touch-icon'; appleEl.href = icon192;
+  document.head.appendChild(appleEl);
+
   if ('serviceWorker' in navigator) {
-    var sw = 'const C="pb-v1",A=["./"];' +
+    var sw = 'const C="pb-v2",A=["./"];' +
       'self.addEventListener("install",function(e){e.waitUntil(caches.open(C).then(function(c){return c.addAll(A);}));self.skipWaiting();});' +
       'self.addEventListener("activate",function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x!==C;}).map(function(x){return caches.delete(x);}));}));self.clients.claim();});' +
       'self.addEventListener("fetch",function(e){e.respondWith(caches.match(e.request).then(function(r){return r||fetch(e.request).catch(function(){return caches.match("./");});}));});';
-    var blob = new Blob([sw],{type:'application/javascript'});
-    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(function(){});
+    navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(function(){});
   }
+
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault(); window._installPrompt = e;
+  });
 };
 </script>
 </body>
