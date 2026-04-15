@@ -1896,14 +1896,6 @@ function renderAll() {
 // ═══════════════════════════════════════════
 // WIRE UP
 // ═══════════════════════════════════════════
-window.onerror = function(msg, src, line, col, err) {
-  document.body.style.background = '#1a0e2e';
-  document.body.style.color = '#f87171';
-  document.body.style.fontFamily = 'monospace';
-  document.body.style.padding = '20px';
-  document.body.innerHTML = '<h2>Error</h2><p>' + msg + '</p><p>Line: ' + line + '</p><p>' + (err ? err.stack : '') + '</p>';
-  return true;
-};
 window.onload = function() {
   loadS();
 
