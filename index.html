@@ -332,6 +332,44 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .cc-pay-btn{background:var(--blue-dim);color:var(--blue);border-radius:var(--rsm);padding:5px 12px;font-size:11px;font-weight:800}
 /* savings mode button */
 .env-act-btn.savings-on{background:rgba(74,222,128,.15);color:var(--green)}
+
+/* ── UNDERFUNDED BANNER ── */
+.underfunded-banner{background:var(--yellow-dim);border:1px solid rgba(251,191,36,.25);border-radius:var(--r);padding:12px 14px;margin-bottom:12px}
+.uf-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.uf-title{font-size:12px;font-weight:800;color:var(--yellow)}
+.uf-auto-btn{background:var(--yellow);color:#000;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:800}
+.uf-item{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(251,191,36,.15)}
+.uf-item:last-child{border-bottom:none}
+.uf-name{font-size:12px;font-weight:700;color:var(--text2)}
+.uf-needed{font-size:12px;font-weight:800;color:var(--yellow)}
+
+/* ── SCHEDULED ── */
+.sched-item{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.sched-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:var(--surf2)}
+.sched-body{flex:1;min-width:0}
+.sched-desc{font-weight:700;font-size:14px;color:var(--text)}
+.sched-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.sched-right{text-align:right;flex-shrink:0}
+.sched-amt{font-weight:800;font-size:15px;color:var(--text)}
+.sched-due{font-size:10px;font-weight:800;margin-top:2px}
+.sched-due.soon{color:var(--yellow)}
+.sched-due.overdue{color:var(--red)}
+.sched-log-btn{background:var(--green-dim);color:var(--green);border-radius:var(--rsm);padding:4px 10px;font-size:11px;font-weight:800;margin-top:4px;display:block;text-align:center}
+
+/* ── REPORTS ── */
+.rpt-row{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-bottom:8px}
+.rpt-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.rpt-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.rpt-name{flex:1;font-weight:700;font-size:13px;color:var(--text)}
+.rpt-total{font-weight:800;font-size:14px;color:var(--text)}
+.rpt-bar-wrap{height:6px;background:var(--surf2);border-radius:3px;overflow:hidden}
+.rpt-bar-fill{height:100%;border-radius:3px;transition:.4s}
+.rpt-meta{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px;font-weight:700}
+.compare-row{display:flex;gap:10px;margin-bottom:8px}
+.compare-card{flex:1;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:13px}
+.compare-month{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.compare-amt{font-family:'Playfair Display',serif;font-size:20px;color:var(--text)}
+.compare-delta{font-size:11px;font-weight:800;margin-top:4px}
 </style>
 </head>
 <body>
@@ -366,10 +404,11 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="tab-more" id="moreTab" onclick="toggleMoreMenu()">More ▾
       <div class="more-dropdown" id="moreDropdown">
         <div class="more-item" data-v="cards">💳 Credit Cards</div>
+        <div class="more-item" data-v="scheduled">🔁 Scheduled</div>
+        <div class="more-item" data-v="reports">📈 Reports</div>
         <div class="more-item" data-v="goals">🎯 Goals</div>
         <div class="more-item" data-v="debt">🏦 Debt</div>
         <div class="more-item" data-v="history">📅 History</div>
-        <div class="more-item" data-v="learn">✨ Learn</div>
         <div class="more-item" data-v="settings">⚙️ Settings</div>
       </div>
     </div>
@@ -382,6 +421,13 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
   <div class="view on" id="view-budget">
     <div class="warn" id="warnBanner"><span>⚠️ You've assigned more than your bank balance!</span></div>
     <div class="week-banner" id="weekBanner">📅 Weekly mode — showing per-paycheck amounts</div>
+    <div class="underfunded-banner" id="underfundedBanner" style="display:none">
+      <div class="uf-top">
+        <span class="uf-title">⚡ Underfunded Envelopes</span>
+        <button class="uf-auto-btn" id="autoAssignBtn">Auto-Assign</button>
+      </div>
+      <div id="underfundedList"></div>
+    </div>
     <div class="sh"><div class="sh-title">Income</div><button class="sh-btn" id="addIncBtn">+ Add</button></div>
     <div class="card" style="margin-bottom:14px"><div class="card-body" id="incomeList"><div class="empty"><p>Add income to begin.</p></div></div></div>
     <div class="sh"><div class="sh-title">Envelopes</div></div>
@@ -471,16 +517,45 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div id="ccList"><div class="empty"><div class="ei">💳</div><p>No cards added.<br>Tap + to add a credit card.</p></div></div>
   </div>
 
+  <!-- SCHEDULED -->
+  <div class="view" id="view-scheduled">
+    <div class="sh"><div class="sh-title">Scheduled Transactions</div></div>
+    <div class="card" style="margin-bottom:12px;background:var(--blue-dim);border-color:rgba(96,165,250,.2)">
+      <div class="card-body" style="font-size:12px;color:var(--blue);font-weight:700;line-height:1.6">
+        📅 Add recurring bills here. They'll show as upcoming reminders and you can log them with one tap when they're due.
+      </div>
+    </div>
+    <div class="sh"><div class="sh-title">Due Soon</div></div>
+    <div id="scheduledDue"><div class="empty"><p>Nothing due in the next 7 days.</p></div></div>
+    <div class="sh" style="margin-top:8px"><div class="sh-title">All Scheduled</div></div>
+    <div id="scheduledList"><div class="empty"><div class="ei">🔁</div><p>No scheduled transactions.<br>Tap + to add a recurring bill.</p></div></div>
+  </div>
+
+  <!-- REPORTS -->
+  <div class="view" id="view-reports">
+    <div class="sh"><div class="sh-title">Spending Reports</div></div>
+    <div class="stat-row">
+      <div class="stat" id="rptRangeBtn" onclick="cycleReportRange()" style="cursor:pointer">
+        <div class="stat-val" id="rptRangeLabel">3 Months</div>
+        <div class="stat-lbl">Tap to change range</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="rptTotal">$0</div>
+        <div class="stat-lbl">Total Spent</div>
+      </div>
+    </div>
+    <div class="sh" style="margin-top:4px"><div class="sh-title">By Envelope</div></div>
+    <div id="reportsList"></div>
+    <div class="sh" style="margin-top:8px"><div class="sh-title">Month vs Last Month</div></div>
+    <div id="monthCompare"></div>
+  </div>
+
   <!-- HISTORY -->
   <div class="view" id="view-history">
     <div class="sh"><div class="sh-title">All Time</div></div>
     <div id="histList"><div class="empty"><div class="ei">📅</div><p>No history yet.</p></div></div>
   </div>
 
-
-  <!-- LEARN -->
-  <div class="view" id="view-learn">
-    <div class="sh"><div class="sh-title">ZBB Fundamentals</div></div>
     <div class="learn-card">
       <div class="learn-title">🐷 The Piggy Bank Philosophy</div>
       <div class="learn-body">Zero-based budgeting means every dollar you have gets a job. You can't spend money you haven't assigned, and you can't assign money you don't have in the bank. This app enforces that — the "Ready to Assign" number is your truth.</div>
@@ -674,6 +749,7 @@ var S = {
   envelopes: [],    // {id, groupId, name, emoji, color, assigned, order, target, isSavings, carryForward}
   // target: {type:'spend'|'save'|'refill', amount, byDate(optional)}
   creditCards: [],  // {id, name, lastFour, balance, paymentEnvId}
+  scheduled: [],    // {id, desc, amount, envId, dayOfMonth, freq:'monthly'|'weekly', nextDate, isCredit, ccId}
   owedToMe: [],
   iOwe: [],
   goals: [],
@@ -710,6 +786,7 @@ function loadS() {
   if (S.envelopes.length && !S.groups.length) migrateToGroups();
   if (!S.groups.length) seedGroups();
   if (!S.creditCards) S.creditCards = [];
+  if (!S.scheduled) S.scheduled = [];
   if (!S.currentMonth) S.currentMonth = currentMonthKey();
   // Ensure order fields exist
   S.groups.forEach(function(g,i){ if(g.order===undefined) g.order=i; });
@@ -1096,7 +1173,7 @@ function setAssigned(envId) {
     toast('⚠️ Only '+fmt(rta)+' left to assign!'); return;
   }
   env.assigned = val;
-  saveS(); renderEnvelopes(); updateRTA();
+  saveS(); renderEnvelopes(); updateRTA(); renderUnderfunded();
   toast('✓ '+env.name+' set to '+fmt(val));
 }
 
@@ -1526,7 +1603,7 @@ function renderHistory() {
 // ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
-var MORE_VIEWS = ['cards','goals','debt','history','learn','settings'];
+var MORE_VIEWS = ['cards','scheduled','reports','goals','debt','history','settings'];
 function go(v) {
   currentView = v;
   document.querySelectorAll('.view').forEach(function(el){el.className='view';});
@@ -1552,8 +1629,10 @@ function go(v) {
   if (v==='debt') renderDebts();
   if (v==='history') renderHistory();
   if (v==='cards') renderCCTab();
+  if (v==='scheduled') renderScheduled();
+  if (v==='reports') renderReports();
   var fab = document.getElementById('fab');
-  fab.style.display = ['budget','expenses','owed','goals','debt','cards'].indexOf(v) >= 0 ? 'flex' : 'none';
+  fab.style.display = ['budget','expenses','owed','goals','debt','cards','scheduled'].indexOf(v) >= 0 ? 'flex' : 'none';
 }
 function toggleMoreMenu() {
   var dd = document.getElementById('moreDropdown');
@@ -1574,6 +1653,7 @@ function fabClick() {
   else if (currentView==='debt') openDebtModal();
   else if (currentView==='owed') openOwedModal('toMe');
   else if (currentView==='cards') openCCModal(null);
+  else if (currentView==='scheduled') openSchedModal();
 }
 
 // ═══════════════════════════════════════════
@@ -1885,9 +1965,300 @@ function esc(str) {
 // ═══════════════════════════════════════════
 // RENDER ALL
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+// UNDERFUNDED + AUTO-ASSIGN
+// ═══════════════════════════════════════════
+function getUnderfunded() {
+  var items = [];
+  S.envelopes.forEach(function(env) {
+    if (!env.target) return;
+    var t = env.target;
+    var assigned = env.assigned || 0;
+    var needed = 0;
+    if (t.type === 'refill') needed = Math.max(0, t.amount - assigned);
+    if (t.type === 'spend') needed = Math.max(0, t.amount - assigned);
+    if (t.type === 'save') needed = Math.max(0, t.amount - assigned);
+    if (needed > 0.005) items.push({env:env, needed:needed});
+  });
+  return items;
+}
+
+function renderUnderfunded() {
+  var items = getUnderfunded();
+  var banner = document.getElementById('underfundedBanner');
+  var list = document.getElementById('underfundedList');
+  if (!items.length) { banner.style.display = 'none'; return; }
+  banner.style.display = 'block';
+  list.innerHTML = items.map(function(item) {
+    return '<div class="uf-item">' +
+      '<span class="uf-name">'+item.env.emoji+' '+esc(item.env.name)+'</span>' +
+      '<span class="uf-needed">needs '+fmt(item.needed)+'</span>' +
+    '</div>';
+  }).join('');
+}
+
+function autoAssign() {
+  var rta = readyToAssign();
+  if (rta <= 0) { toast('Nothing left to assign!'); return; }
+  var items = getUnderfunded();
+  if (!items.length) { toast('All targets are funded! ✓'); return; }
+  var assigned_count = 0;
+  items.forEach(function(item) {
+    if (rta <= 0) return;
+    var give = Math.min(item.needed, rta);
+    item.env.assigned = (item.env.assigned||0) + give;
+    rta -= give;
+    assigned_count++;
+  });
+  saveS(); renderEnvelopes(); renderUnderfunded(); updateRTA();
+  toast('✓ Auto-assigned to '+assigned_count+' envelope'+(assigned_count!==1?'s':'')+'!');
+}
+
+// ═══════════════════════════════════════════
+// SCHEDULED TRANSACTIONS
+// ═══════════════════════════════════════════
+var editingSchedId = null;
+
+function nextOccurrence(sched) {
+  var now = new Date();
+  var next = new Date(sched.nextDate + 'T12:00:00');
+  // If next is in the past, advance it
+  while (next < now) {
+    if (sched.freq === 'monthly') {
+      next.setMonth(next.getMonth() + 1);
+    } else if (sched.freq === 'weekly') {
+      next.setDate(next.getDate() + 7);
+    } else if (sched.freq === 'biweekly') {
+      next.setDate(next.getDate() + 14);
+    } else {
+      break;
+    }
+  }
+  return next;
+}
+
+function daysUntil(date) {
+  var today = new Date(); today.setHours(0,0,0,0);
+  var d = new Date(date); d.setHours(0,0,0,0);
+  return Math.round((d - today) / 86400000);
+}
+
+function renderScheduled() {
+  var now = new Date();
+  var due = [];
+  var all = [];
+  S.scheduled.forEach(function(s) {
+    var next = nextOccurrence(s);
+    var days = daysUntil(next);
+    var item = {s:s, next:next, days:days};
+    all.push(item);
+    if (days <= 7) due.push(item);
+  });
+  all.sort(function(a,b){return a.days-b.days;});
+  due.sort(function(a,b){return a.days-b.days;});
+
+  var dueEl = document.getElementById('scheduledDue');
+  if (!due.length) {
+    dueEl.innerHTML = '<div class="empty" style="padding:12px 0"><p>Nothing due in the next 7 days.</p></div>';
+  } else {
+    dueEl.innerHTML = '';
+    due.forEach(function(item){ dueEl.appendChild(makeSchedEl(item, true)); });
+  }
+
+  var listEl = document.getElementById('scheduledList');
+  if (!all.length) {
+    listEl.innerHTML = '<div class="empty"><div class="ei">🔁</div><p>No scheduled transactions.<br>Tap + to add a recurring bill.</p></div>';
+  } else {
+    listEl.innerHTML = '';
+    all.forEach(function(item){ listEl.appendChild(makeSchedEl(item, false)); });
+  }
+}
+
+function makeSchedEl(item, showLog) {
+  var s = item.s;
+  var days = item.days;
+  var env = S.envelopes.find(function(e){return e.id===s.envId;});
+  var dueClass = days < 0 ? 'overdue' : days <= 3 ? 'soon' : '';
+  var dueText = days < 0 ? Math.abs(days)+'d overdue' : days===0 ? 'Due today!' : 'Due in '+days+'d';
+  var div = document.createElement('div');
+  div.className = 'sched-item';
+  div.innerHTML =
+    '<div class="sched-icon">'+(env?env.emoji:'📅')+'</div>' +
+    '<div class="sched-body">' +
+      '<div class="sched-desc">'+esc(s.desc)+'</div>' +
+      '<div class="sched-meta">'+(env?esc(env.name):'?')+' · '+s.freq+'</div>' +
+      (showLog ? '<button class="sched-log-btn" id="slog_'+s.id+'">✓ Log it now</button>' : '') +
+    '</div>' +
+    '<div class="sched-right">' +
+      '<div class="sched-amt">'+fmt(s.amount)+'</div>' +
+      '<div class="sched-due '+dueClass+'">'+dueText+'</div>' +
+      '<button class="del-btn" id="sdel_'+s.id+'" style="margin-top:6px">×</button>' +
+    '</div>';
+  // Wire buttons safely
+  (function(sid, sched, nextDate){
+    var logBtn = div.querySelector('#slog_'+sid);
+    var delBtn = div.querySelector('#sdel_'+sid);
+    if (logBtn) logBtn.addEventListener('click', function(){ logScheduled(sid, nextDate); });
+    if (delBtn) delBtn.addEventListener('click', function(){ deleteScheduled(sid); });
+  })(s.id, s, item.next);
+  return div;
+}
+
+function logScheduled(id, nextDate) {
+  var s = S.scheduled.find(function(x){return x.id===id;});
+  if (!s) return;
+  // Log as expense
+  S.expenses.push({id:uid(), desc:s.desc, amount:s.amount, envId:s.envId,
+    date:new Date().toISOString().slice(0,10), isCredit:s.isCredit||false, ccId:s.ccId||null});
+  // Advance nextDate
+  var next = new Date(nextDate);
+  if (s.freq==='monthly') next.setMonth(next.getMonth()+1);
+  else if (s.freq==='weekly') next.setDate(next.getDate()+7);
+  else if (s.freq==='biweekly') next.setDate(next.getDate()+14);
+  s.nextDate = next.toISOString().slice(0,10);
+  saveS(); renderScheduled(); renderExpenses(); renderEnvelopes();
+  toast('✓ Logged and rescheduled!');
+}
+
+function deleteScheduled(id) {
+  S.scheduled = S.scheduled.filter(function(x){return x.id!==id;});
+  saveS(); renderScheduled(); toast('Removed');
+}
+
+function openSchedModal() {
+  document.getElementById('schedDesc').value = '';
+  document.getElementById('schedAmt').value = '';
+  document.getElementById('schedFreq').value = 'monthly';
+  document.getElementById('schedNextDate').value = new Date().toISOString().slice(0,10);
+  var sel = document.getElementById('schedEnv');
+  var opts = '';
+  sortedGroups().forEach(function(g){
+    opts += '<optgroup label="'+esc(g.name)+'">';
+    groupEnvelopes(g.id).forEach(function(e){ opts += '<option value="'+e.id+'">'+e.emoji+' '+e.name+'</option>'; });
+    opts += '</optgroup>';
+  });
+  sel.innerHTML = opts;
+  openModal('schedModal');
+}
+
+function saveSched() {
+  var desc = document.getElementById('schedDesc').value.trim();
+  var amt = parseFloat(document.getElementById('schedAmt').value)||0;
+  var envId = document.getElementById('schedEnv').value;
+  var freq = document.getElementById('schedFreq').value;
+  var nextDate = document.getElementById('schedNextDate').value;
+  if (!desc) { toast('Enter a description'); return; }
+  if (!amt||amt<=0) { toast('Enter a valid amount'); return; }
+  if (!nextDate) { toast('Pick a date'); return; }
+  S.scheduled.push({id:uid(), desc:desc, amount:amt, envId:envId, freq:freq, nextDate:nextDate});
+  saveS(); closeModal('schedModal'); renderScheduled(); toast('🔁 Scheduled!');
+}
+
+// ═══════════════════════════════════════════
+// REPORTS
+// ═══════════════════════════════════════════
+var reportMonths = 3;
+
+function cycleReportRange() {
+  reportMonths = reportMonths === 3 ? 6 : reportMonths === 6 ? 12 : 3;
+  document.getElementById('rptRangeLabel').textContent = reportMonths+' Months';
+  renderReports();
+}
+
+function renderReports() {
+  var now = new Date();
+  var cutoff = new Date(now.getFullYear(), now.getMonth()-reportMonths, 1);
+  var filtered = S.expenses.filter(function(e){
+    return new Date(e.date+'T12:00:00') >= cutoff;
+  });
+  var total = 0;
+  filtered.forEach(function(e){total+=e.amount;});
+  document.getElementById('rptTotal').textContent = fmtS(total);
+
+  // By envelope
+  var byEnv = {};
+  filtered.forEach(function(e){
+    byEnv[e.envId] = (byEnv[e.envId]||0) + e.amount;
+  });
+  var sorted = Object.keys(byEnv).sort(function(a,b){return byEnv[b]-byEnv[a];});
+  var maxAmt = sorted.length ? byEnv[sorted[0]] : 1;
+
+  var listEl = document.getElementById('reportsList');
+  if (!sorted.length) {
+    listEl.innerHTML = '<div class="empty"><p>No expenses in this period.</p></div>';
+  } else {
+    listEl.innerHTML = '';
+    sorted.forEach(function(envId) {
+      var env = S.envelopes.find(function(e){return e.id===envId;});
+      var amt = byEnv[envId];
+      var pct = Math.min(amt/maxAmt*100, 100);
+      var color = env ? env.color : 'var(--acc)';
+      var avgPerMonth = amt / reportMonths;
+      var div = document.createElement('div');
+      div.className = 'rpt-row';
+      div.innerHTML =
+        '<div class="rpt-top">' +
+          '<div class="rpt-icon" style="background:'+(env?env.color+'22':'var(--surf2)')+'">'+( env?env.emoji:'📦')+'</div>' +
+          '<div class="rpt-name">'+(env?esc(env.name):envId)+'</div>' +
+          '<div class="rpt-total">'+fmt(amt)+'</div>' +
+        '</div>' +
+        '<div class="rpt-bar-wrap"><div class="rpt-bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div>' +
+        '<div class="rpt-meta"><span>'+reportMonths+'-month total</span><span>'+fmt(avgPerMonth)+'/mo avg</span></div>';
+      listEl.appendChild(div);
+    });
+  }
+
+  // Month comparison
+  renderMonthCompare();
+}
+
+function renderMonthCompare() {
+  var now = new Date();
+  var thisMonthKey = now.getFullYear()+'-'+(now.getMonth()+1);
+  var lastMonth = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  var lastMonthKey = lastMonth.getFullYear()+'-'+(lastMonth.getMonth()+1);
+
+  function monthTotal(key) {
+    var t = 0;
+    S.expenses.forEach(function(e){ if(e.date.slice(0,7)===key.slice(0,7).replace('-','-0').replace(/-(\d)$/,'-0$1').replace('--','-')) t+=e.amount; });
+    return t;
+  }
+  // simpler month match
+  function monthTotalSimple(year, month) {
+    var t = 0;
+    S.expenses.forEach(function(e){
+      var d = new Date(e.date+'T12:00:00');
+      if (d.getFullYear()===year && d.getMonth()===month) t+=e.amount;
+    });
+    return t;
+  }
+
+  var thisTotal = monthTotalSimple(now.getFullYear(), now.getMonth());
+  var lastTotal = monthTotalSimple(lastMonth.getFullYear(), lastMonth.getMonth());
+  var delta = thisTotal - lastTotal;
+  var deltaColor = delta > 0 ? 'var(--red)' : 'var(--green)';
+  var deltaSign = delta > 0 ? '+' : '';
+
+  var el = document.getElementById('monthCompare');
+  el.innerHTML =
+    '<div class="compare-row">' +
+      '<div class="compare-card">' +
+        '<div class="compare-month">'+lastMonth.toLocaleDateString('en-US',{month:'long'})+'</div>' +
+        '<div class="compare-amt">'+fmtS(lastTotal)+'</div>' +
+        '<div class="compare-delta" style="color:var(--text3)">last month</div>' +
+      '</div>' +
+      '<div class="compare-card">' +
+        '<div class="compare-month">'+now.toLocaleDateString('en-US',{month:'long'})+' (so far)</div>' +
+        '<div class="compare-amt">'+fmtS(thisTotal)+'</div>' +
+        '<div class="compare-delta" style="color:'+deltaColor+'">'+deltaSign+fmtS(delta)+' vs last month</div>' +
+      '</div>' +
+    '</div>';
+}
+
 function renderAll() {
   renderIncome(); renderEnvelopes(); renderExpenses(); renderSummary();
   renderOwed(); renderGoals(); renderDebts(); renderHistory(); renderCCTab();
+  renderUnderfunded(); renderScheduled();
   updateRTA(); applyTheme();
   document.getElementById('weekTog').className = 'tog' + (S.weeklyMode?' on':'');
   document.getElementById('darkTog').className = 'tog' + (S.darkMode?' on':'');
@@ -1991,6 +2362,14 @@ window.onload = function() {
   document.getElementById('cancelDebtBtn').addEventListener('click', function(){closeModal('debtModal');});
   document.getElementById('debtModal').addEventListener('click', function(e){modalBg(e,'debtModal');});
 
+  // Auto-assign
+  document.getElementById('autoAssignBtn').addEventListener('click', autoAssign);
+
+  // Scheduled modal
+  document.getElementById('saveSchedBtn').addEventListener('click', saveSched);
+  document.getElementById('cancelSchedBtn').addEventListener('click', function(){closeModal('schedModal');});
+  document.getElementById('schedModal').addEventListener('click', function(e){modalBg(e,'schedModal');});
+
   // Credit Card modal
   document.getElementById('saveCCBtn').addEventListener('click', saveCC);
   document.getElementById('cancelCCBtn').addEventListener('click', function(){closeModal('ccModal');});
@@ -2068,6 +2447,27 @@ window.onload = function() {
     <button class="btn-p" id="saveCCBtn">Add Card</button>
     <button class="btn-s" id="cancelCCBtn">Cancel</button>
     <button class="btn-d" id="deleteCCBtn" style="display:none">Remove Card</button>
+  </div>
+</div>
+
+<!-- Scheduled Transaction Modal -->
+<div class="overlay" id="schedModal">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title">Scheduled Transaction</div>
+    <div class="field"><label>Description</label><input id="schedDesc" placeholder="e.g. Rent, Netflix"></div>
+    <div class="field"><label>Amount ($)</label><input id="schedAmt" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field"><label>Envelope</label><select id="schedEnv"></select></div>
+    <div class="field"><label>Frequency</label>
+      <select id="schedFreq">
+        <option value="monthly">Monthly</option>
+        <option value="biweekly">Every 2 Weeks</option>
+        <option value="weekly">Weekly</option>
+      </select>
+    </div>
+    <div class="field"><label>Next Due Date</label><input id="schedNextDate" type="date"></div>
+    <button class="btn-p" id="saveSchedBtn">Save</button>
+    <button class="btn-s" id="cancelSchedBtn">Cancel</button>
   </div>
 </div>
 </body>
