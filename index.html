@@ -1120,7 +1120,7 @@ function renderEnvCard(env) {
   return '<div class="env" id="env_'+eid+'" data-eid="'+eid+'" draggable="true">' +
     '<div class="env-hdr" data-eid="'+eid+'" onclick="toggleEnv(this.dataset.eid)">' +
       '<div class="env-drag-handle">&#x2807;</div>' +
-      '<div class="env-icon" style="background:'+env.color+'22">'+env.emoji+'</div>' +
+      '<div class="env-icon" style="background:'+env.color+'55">'+env.emoji+'</div>' +
       '<div class="env-info">' +
         '<div class="env-name">'+esc(env.name)+'</div>' +
         '<div class="env-assigned">'+fmt(assigned)+wk+'</div>' +
@@ -1436,7 +1436,7 @@ function renderExpenses() {
   var sorted = S.expenses.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   el.innerHTML = sorted.map(function(e) {
     var env = S.envelopes.find(function(v){return v.id===e.envId;});
-    var clr = env ? env.color+'22' : 'var(--surf2)';
+    var clr = env ? env.color+'55' : 'var(--surf2)';
     var dt = new Date(e.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
     var tags = (e.isCredit ? '<span class="tag credit">CREDIT</span>' : '') + (e.isReimb ? '<span class="tag reimb">REIMB</span>' : '');
     return '<div class="exp-item">' +
@@ -1472,7 +1472,7 @@ function renderSummary() {
       var pct = assigned > 0 ? Math.min(spent/assigned*100, 120) : 0;
       var over = avail < 0;
       html += '<div class="sum-row">' +
-        '<div class="sum-icon" style="background:'+env.color+'22">' + env.emoji + '</div>' +
+        '<div class="sum-icon" style="background:'+env.color+'55">' + env.emoji + '</div>' +
         '<div class="sum-body">' +
           '<div class="sum-name">' + esc(env.name) + '</div>' +
           '<div class="sum-track"><div class="sum-fill" style="width:'+pct+'%;background:'+(over?'var(--red)':env.color)+'"></div></div>' +
@@ -1723,16 +1723,23 @@ function openEnvModal(id, groupId) {
   // Color picker
   var cp = document.getElementById('colorPicker');
   cp.innerHTML = COLORS.map(function(c){
-    var sel = env && env.color===c ? 'outline:3px solid white;outline-offset:2px;' : '';
-    return '<div onclick="selectColor(this,\''+c+'\')" style="width:32px;height:32px;border-radius:50%;background:'+c+';cursor:pointer;'+sel+'" data-color="'+c+'"></div>';
+    var isSel = env && env.color===c;
+    var selStyle = isSel ? 'transform:scale(1.25);box-shadow:0 0 0 3px white,0 0 0 5px '+c+';' : '';
+    var check = isSel ? '<span style="color:white;font-size:14px;line-height:32px;text-align:center;display:block;">✓</span>' : '';
+    return '<div onclick="selectColor(this,\''+c+'\')" style="width:32px;height:32px;border-radius:50%;background:'+c+';cursor:pointer;transition:.2s;'+selStyle+'" data-color="'+c+'">'+check+'</div>';
   }).join('');
   openModal('envModal');
 }
 
 function selectColor(el, color) {
-  document.querySelectorAll('#colorPicker div').forEach(function(d){d.style.outline='none';});
-  el.style.outline = '3px solid white';
-  el.style.outlineOffset = '2px';
+  document.querySelectorAll('#colorPicker div').forEach(function(d){
+    d.style.transform='';
+    d.style.boxShadow='';
+    d.innerHTML='';
+  });
+  el.style.transform = 'scale(1.25)';
+  el.style.boxShadow = '0 0 0 3px white, 0 0 0 5px '+color;
+  el.innerHTML = '<span style="color:white;font-size:14px;line-height:32px;text-align:center;display:block;">✓</span>';
 }
 
 function openOwedModal(type) {
@@ -1829,8 +1836,7 @@ function saveExp() {
 function saveEnv() {
   var name = document.getElementById('envName').value.trim();
   var emoji = document.getElementById('envEmoji').value.trim() || '📦';
-  var colorEl = document.querySelector('#colorPicker div[style*="outline: 3px"]') ||
-                document.querySelector('#colorPicker div[style*="outline:3px"]');
+  var colorEl = document.querySelector('#colorPicker div[style*="scale"]');
   var color = colorEl ? colorEl.getAttribute('data-color') : COLORS[0];
   var groupId = document.getElementById('envGroupSelect').value;
   if (!name) { toast('Enter a name'); return; }
@@ -2198,7 +2204,7 @@ function renderReports() {
       div.className = 'rpt-row';
       div.innerHTML =
         '<div class="rpt-top">' +
-          '<div class="rpt-icon" style="background:'+(env?env.color+'22':'var(--surf2)')+'">'+( env?env.emoji:'📦')+'</div>' +
+          '<div class="rpt-icon" style="background:'+(env?env.color+'55':'var(--surf2)')+'">'+( env?env.emoji:'📦')+'</div>' +
           '<div class="rpt-name">'+(env?esc(env.name):envId)+'</div>' +
           '<div class="rpt-total">'+fmt(amt)+'</div>' +
         '</div>' +
