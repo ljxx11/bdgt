@@ -497,7 +497,12 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="sh"><div class="sh-title">Debts</div><button class="sh-btn" id="addDebtBtn">+ Debt</button></div>
     <div class="stat-row">
       <div class="stat"><div class="stat-val" id="debtTot" style="color:var(--red)">$0</div><div class="stat-lbl">Total Debt</div></div>
-      <div class="stat"><div class="stat-val" id="debtMin">$0</div><div class="stat-lbl">Min/Month</div></div>
+      <div class="stat"><div class="stat-val" id="debtMinStat">$0</div><div class="stat-lbl">Min/Month</div></div>
+    </div>
+    <div class="card" style="margin-bottom:12px;background:var(--yellow-dim);border-color:rgba(251,191,36,.2)">
+      <div class="card-body" style="font-size:12px;color:var(--yellow);font-weight:700;line-height:1.6">
+        💡 To make debt payments, create an envelope called "Debt Payment" and assign your minimum each month. Log payments as expenses from that envelope. Use this tab to track your remaining balances.
+      </div>
     </div>
     <div id="debtList"><div class="empty"><div class="ei">💳</div><p>No debts tracked yet.</p></div></div>
   </div>
@@ -732,7 +737,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="field"><label>Name</label><input id="debtName" placeholder="e.g. Student Loan"></div>
     <div class="field"><label>Balance ($)</label><input id="debtBal" type="number" inputmode="decimal" placeholder="0.00"></div>
     <div class="field"><label>Interest Rate (%)</label><input id="debtRate" type="number" inputmode="decimal" placeholder="0.00"></div>
-    <div class="field"><label>Minimum Payment ($)</label><input id="debtMin" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field"><label>Minimum Payment ($)</label><input id="debtMinInput" type="number" inputmode="decimal" placeholder="0.00"></div>
     <button class="btn-p" id="saveDebtBtn">Save</button>
     <button class="btn-s" id="cancelDebtBtn">Cancel</button>
   </div>
@@ -1551,7 +1556,7 @@ function renderDebts() {
   var totalBal = 0, totalMin = 0;
   S.debts.forEach(function(d){ totalBal += d.balance; totalMin += d.minPayment||0; });
   document.getElementById('debtTot').textContent = fmtS(totalBal);
-  document.getElementById('debtMin').textContent = fmtS(totalMin);
+  document.getElementById('debtMinStat').textContent = fmtS(totalMin);
   var el = document.getElementById('debtList');
   if (!S.debts.length) { el.innerHTML = '<div class="empty"><div class="ei">💳</div><p>No debts tracked.</p></div>'; return; }
   el.innerHTML = S.debts.map(function(d) {
@@ -1763,7 +1768,7 @@ function openDebtModal() {
   document.getElementById('debtName').value = '';
   document.getElementById('debtBal').value = '';
   document.getElementById('debtRate').value = '';
-  document.getElementById('debtMin').value = '';
+  document.getElementById('debtMinInput').value = '';
   openModal('debtModal');
 }
 
@@ -1886,7 +1891,7 @@ function saveDebt() {
   var name = document.getElementById('debtName').value.trim();
   var balance = parseFloat(document.getElementById('debtBal').value)||0;
   var rate = parseFloat(document.getElementById('debtRate').value)||0;
-  var minPayment = parseFloat(document.getElementById('debtMin').value)||0;
+  var minPayment = parseFloat(document.getElementById('debtMinInput').value)||0;
   if (!name) { toast('Enter a name'); return; }
   S.debts.push({id:uid(), name:name, balance:balance, rate:rate, minPayment:minPayment});
   saveS(); closeModal('debtModal'); renderDebts(); toast('Debt tracked');
