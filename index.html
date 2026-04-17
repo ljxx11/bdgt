@@ -388,13 +388,13 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .rollover-carry{font-size:13px;font-weight:800;color:var(--green)}
 
 /* ── SPEED DIAL ── */
-.speed-dial{position:fixed;bottom:calc(var(--nav)+16px);right:16px;z-index:90;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
-.fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(168,85,247,.5);transition:.2s;border:none;cursor:pointer;font-family:'Nunito',sans-serif}
+.speed-dial{position:fixed;bottom:calc(var(--nav)+16px);right:16px;z-index:90;display:flex;flex-direction:column-reverse;align-items:flex-end;gap:10px}
+.fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(168,85,247,.5);transition:.2s;border:none;cursor:pointer;font-family:'Nunito',sans-serif;flex-shrink:0}
 .fab:active{transform:scale(.9)}
-.dial-option{display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}
+.dial-option{display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(20px);pointer-events:none;transition:.25s;flex-shrink:0}
 .dial-option.open{opacity:1;transform:translateY(0);pointer-events:auto}
-.dial-btn{width:44px;height:44px;border-radius:50%;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.4);border:none;cursor:pointer;font-family:'Nunito',sans-serif}
-.dial-label{background:var(--surf2);color:var(--text);font-size:12px;font-weight:800;padding:5px 12px;border-radius:20px;white-space:nowrap;border:1px solid var(--border)}
+.dial-btn{width:44px;height:44px;border-radius:50%;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.4);border:none;cursor:pointer;font-family:'Nunito',sans-serif;flex-shrink:0}
+.dial-label{background:var(--surf2);color:var(--text);font-size:12px;font-weight:800;padding:5px 12px;border-radius:20px;white-space:nowrap;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.3)}
 </style>
 </head>
 <body>
@@ -688,15 +688,15 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 <!-- SPEED DIAL -->
 <div class="speed-dial" id="speedDial">
-  <div class="dial-option" id="dialExpense">
-    <div class="dial-label">Log Expense</div>
-    <button class="dial-btn" style="background:linear-gradient(135deg,#f87171,#ef4444)" id="dialExpBtn">📝</button>
-  </div>
+  <button class="fab" id="fab">＋</button>
   <div class="dial-option" id="dialIncome">
     <div class="dial-label">Add Income</div>
     <button class="dial-btn" style="background:linear-gradient(135deg,#4ade80,#16a34a)" id="dialIncBtn">💰</button>
   </div>
-  <button class="fab" id="fab">＋</button>
+  <div class="dial-option" id="dialExpense">
+    <div class="dial-label">Log Expense</div>
+    <button class="dial-btn" style="background:linear-gradient(135deg,#f87171,#ef4444)" id="dialExpBtn">📝</button>
+  </div>
 </div>
 
 <!-- TOAST -->
@@ -1097,15 +1097,11 @@ function toggleNextMonth() {
   saveS();
   var btn = document.getElementById('monthToggleBtn');
   var banner = document.getElementById('nextMonthBanner');
-  if (S.viewingNextMonth) {
-    btn.textContent = '✨ Budgeting Next Month';
-    btn.className = 'month-toggle-btn next-month';
-    banner.className = 'next-month-banner show';
-  } else {
-    btn.textContent = '📅 Budget This Month';
-    btn.className = 'month-toggle-btn';
-    banner.className = 'next-month-banner';
+  if (btn) {
+    btn.textContent = S.viewingNextMonth ? '✨ Budgeting Next Month' : '📅 Budget This Month';
+    btn.className = 'month-toggle-btn' + (S.viewingNextMonth ? ' next-month' : '');
   }
+  if (banner) banner.className = 'next-month-banner' + (S.viewingNextMonth ? ' show' : '');
   renderEnvelopes(); updateRTA();
 }
 
@@ -1859,6 +1855,7 @@ function fabClick() {
     document.getElementById('dialIncome').className = 'dial-option' + (dialOpen?' open':'');
     document.getElementById('dialExpense').className = 'dial-option' + (dialOpen?' open':'');
     document.getElementById('fab').textContent = dialOpen ? '✕' : '＋';
+    var bd = document.getElementById('dialBackdrop'); if(bd) bd.style.display = dialOpen ? 'block' : 'none';
     return;
   }
   closeDial();
@@ -1874,9 +1871,11 @@ function closeDial() {
   var di = document.getElementById('dialIncome');
   var de = document.getElementById('dialExpense');
   var fab = document.getElementById('fab');
+  var bd = document.getElementById('dialBackdrop');
   if(di) di.className = 'dial-option';
   if(de) de.className = 'dial-option';
   if(fab) fab.textContent = '＋';
+  if(bd) bd.style.display = 'none';
 }
 
 // ═══════════════════════════════════════════
@@ -2232,6 +2231,7 @@ function renderUnderfunded() {
   var items = getUnderfunded();
   var banner = document.getElementById('underfundedBanner');
   var list = document.getElementById('underfundedList');
+  if (!banner || !list) return;
   if (!items.length) { banner.style.display = 'none'; return; }
   banner.style.display = 'block';
   list.innerHTML = items.map(function(item) {
@@ -2526,17 +2526,11 @@ function renderRolloverSummary() {
   // Restore next month toggle button state
   var btn = document.getElementById('monthToggleBtn');
   var banner = document.getElementById('nextMonthBanner');
-  if (btn && banner) {
-    if (S.viewingNextMonth) {
-      btn.textContent = '✨ Budgeting Next Month';
-      btn.className = 'month-toggle-btn next-month';
-      banner.className = 'next-month-banner show';
-    } else {
-      btn.textContent = '📅 Budget This Month';
-      btn.className = 'month-toggle-btn';
-      banner.className = 'next-month-banner';
-    }
+  if (btn) {
+    btn.textContent = S.viewingNextMonth ? '✨ Budgeting Next Month' : '📅 Budget This Month';
+    btn.className = 'month-toggle-btn' + (S.viewingNextMonth ? ' next-month' : '');
   }
+  if (banner) banner.className = 'next-month-banner' + (S.viewingNextMonth ? ' show' : '');
 }
 
 function renderAll() {
@@ -2573,10 +2567,7 @@ window.onload = function() {
   document.getElementById('fab').addEventListener('click', fabClick);
   document.getElementById('dialIncBtn').addEventListener('click', function(){ closeDial(); openIncomeModal(); });
   document.getElementById('dialExpBtn').addEventListener('click', function(){ closeDial(); openExpModal(); });
-  // Close dial on tap outside
-  document.addEventListener('click', function(e){
-    if (dialOpen && !e.target.closest('#speedDial')) closeDial();
-  });
+
 
   // Theme
   document.getElementById('themeBtn').addEventListener('click', toggleDark);
