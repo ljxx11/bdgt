@@ -370,6 +370,22 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .compare-month{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .compare-amt{font-family:'Playfair Display',serif;font-size:20px;color:var(--text)}
 .compare-delta{font-size:11px;font-weight:800;margin-top:4px}
+
+/* ── INCOME EDIT ── */
+.inc-edit-btn{width:28px;height:28px;border-radius:50%;background:var(--surf2);color:var(--text3);font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:4px}
+
+/* ── NEXT MONTH MODE ── */
+.month-toggle-btn{background:var(--surf3);color:var(--text2);border-radius:20px;padding:5px 16px;font-size:11px;font-weight:800;transition:.2s;border:1px solid var(--border)}
+.month-toggle-btn.next-month{background:var(--acc);color:#fff;border-color:var(--acc)}
+.next-month-banner{background:linear-gradient(135deg,rgba(232,121,249,.15),rgba(168,85,247,.1));border:1px solid rgba(232,121,249,.3);border-radius:var(--rsm);padding:8px 14px;margin-bottom:10px;font-size:12px;color:var(--acc);font-weight:800;display:none}
+.next-month-banner.show{display:block}
+.env-next-assigned{font-size:11px;color:var(--acc);font-weight:700;margin-top:2px}
+/* ── ROLLOVER SUMMARY ── */
+.rollover-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:15px;margin-bottom:10px}
+.rollover-env-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.rollover-env-row:last-child{border-bottom:none}
+.rollover-env-name{font-size:13px;font-weight:700;color:var(--text)}
+.rollover-carry{font-size:13px;font-weight:800;color:var(--green)}
 </style>
 </head>
 <body>
@@ -395,6 +411,9 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
       <span id="rtaAssigned">Assigned: $0.00</span>
     </div>
     <div class="rta-prog"><div class="rta-fill" id="rtaFill" style="width:0%"></div></div>
+  <div style="display:flex;justify-content:center;margin-top:8px">
+    <button class="month-toggle-btn" id="monthToggleBtn" onclick="toggleNextMonth()">📅 Budget This Month</button>
+  </div>
   </div>
   <div class="tabs" id="tabs">
     <div class="tab on" data-v="budget">💰 Budget</div>
@@ -421,6 +440,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
   <div class="view on" id="view-budget">
     <div class="warn" id="warnBanner"><span>⚠️ You've assigned more than your bank balance!</span></div>
     <div class="week-banner" id="weekBanner">📅 Weekly mode — showing per-paycheck amounts</div>
+    <div class="next-month-banner" id="nextMonthBanner">✨ Next Month View — assigning money for next month</div>
     <div class="underfunded-banner" id="underfundedBanner" style="display:none">
       <div class="uf-top">
         <span class="uf-title">⚡ Underfunded Envelopes</span>
@@ -428,8 +448,17 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
       </div>
       <div id="underfundedList"></div>
     </div>
-    <div class="sh"><div class="sh-title">Income</div><button class="sh-btn" id="addIncBtn">+ Add</button></div>
-    <div class="card" style="margin-bottom:14px"><div class="card-body" id="incomeList"><div class="empty"><p>Add income to begin.</p></div></div></div>
+    <div class="sh" id="incomeHeader" onclick="toggleIncomeSection()" style="cursor:pointer">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="incomeChevron" style="font-size:11px;color:var(--text3)">▼</span>
+        <div class="sh-title">Income</div>
+        <span id="incomeTotalChip" style="font-size:11px;font-weight:800;color:var(--green);background:var(--green-dim);padding:2px 8px;border-radius:10px"></span>
+      </div>
+      <button class="sh-btn" id="addIncBtn" onclick="event.stopPropagation();openIncomeModal()">+ Add</button>
+    </div>
+    <div id="incomeSection">
+      <div class="card" style="margin-bottom:14px"><div class="card-body" id="incomeList"><div class="empty"><p>Add income to begin.</p></div></div></div>
+    </div>
     <div class="sh"><div class="sh-title">Envelopes</div></div>
     <div id="envList"></div>
     <button class="add-group-btn" id="addGroupBtn">＋ Add Group</button>
@@ -624,6 +653,22 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
         </div>
       </div>
     </div>
+    <div class="sh" style="margin-top:8px"><div class="sh-title">Month Rollover</div></div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-body">
+        <div class="set-row">
+          <div><div class="set-lbl">Last Rollover</div><div class="set-sub" id="lastRolloverDate">Never — happens automatically at month end</div></div>
+        </div>
+        <div class="set-row">
+          <div><div class="set-lbl">🐷 Savings Carry-Forward</div><div class="set-sub">Balances that will carry into next month</div></div>
+        </div>
+        <div id="savingsRolloverList" style="margin-top:4px"></div>
+        <div class="set-row">
+          <div><div class="set-lbl">Simulate Rollover</div><div class="set-sub">Test the rollover now without waiting for month end</div></div>
+          <button class="sh-btn" style="background:var(--yellow-dim);color:var(--yellow)" id="manualRolloverBtn">Roll Over</button>
+        </div>
+      </div>
+    </div>
     <div class="sh" style="margin-top:8px"><div class="sh-title">About</div></div>
     <div class="card"><div class="card-body">
       <div class="set-row"><div><div class="set-lbl">🐷 Piggy Bank</div><div class="set-sub">A YNAB-style zero-based budgeting PWA</div></div></div>
@@ -646,7 +691,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 <div class="overlay" id="incomeModal">
   <div class="sheet">
     <div class="drag"></div>
-    <div class="sheet-title">Add Income</div>
+    <div class="sheet-title" id="incomeModalTitle">Add Income</div>
     <div class="field"><label>Source Name</label><input id="incName" placeholder="e.g. Paycheck, Side Hustle"></div>
     <div class="field"><label>Amount ($)</label><input id="incAmt" type="number" inputmode="decimal" placeholder="0.00"></div>
     <div class="field"><label>Date</label><input id="incDate" type="date"></div>
@@ -660,6 +705,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     </div>
     <button class="btn-p" id="saveIncBtn">Add Income</button>
     <button class="btn-s" id="cancelIncBtn">Cancel</button>
+    <button class="btn-d" id="deleteIncBtn" style="display:none" onclick="delIncome(editingIncomeId);closeModal('incomeModal');editingIncomeId=null;">Delete Entry</button>
   </div>
 </div>
 
@@ -751,7 +797,7 @@ var S = {
   income: [],
   expenses: [],
   groups: [],       // {id, name, collapsed, order}
-  envelopes: [],    // {id, groupId, name, emoji, color, assigned, order, target, isSavings, carryForward}
+  envelopes: [],    // {id, groupId, name, emoji, color, assigned, assignedNext, order, target, isSavings, carryForward}
   // target: {type:'spend'|'save'|'refill', amount, byDate(optional)}
   creditCards: [],  // {id, name, lastFour, balance, paymentEnvId}
   scheduled: [],    // {id, desc, amount, envId, dayOfMonth, freq:'monthly'|'weekly', nextDate, isCredit, ccId}
@@ -761,7 +807,9 @@ var S = {
   debts: [],
   weeklyMode: false,
   darkMode: true,
-  currentMonth: ''  // tracks month for savings carry-forward
+  incomeCollapsed: false,
+  currentMonth: '',  // tracks month for savings carry-forward
+  viewingNextMonth: false  // toggle for next month budgeting
 };
 
 var COLORS = ['#e879f9','#a855f7','#60a5fa','#4ade80','#fbbf24','#f87171','#34d399','#fb923c','#f472b6','#818cf8'];
@@ -786,6 +834,7 @@ function loadS() {
   if (!S.goals) S.goals = [];
   if (!S.debts) S.debts = [];
   if (S.weeklyMode === undefined) S.weeklyMode = false;
+  if (S.incomeCollapsed === undefined) S.incomeCollapsed = false;
   if (S.darkMode === undefined) S.darkMode = true;
   // Migrate old envelopes (no groupId) into a default group
   if (S.envelopes.length && !S.groups.length) migrateToGroups();
@@ -799,7 +848,9 @@ function loadS() {
     if(e.order===undefined) e.order=i;
     if(e.isSavings===undefined) e.isSavings=false;
     if(e.carryForward===undefined) e.carryForward=0;
+    if(e.assignedNext===undefined) e.assignedNext=0;
   });
+  if(S.viewingNextMonth===undefined) S.viewingNextMonth=false;
   // Carry forward savings if new month
   checkMonthRollover();
 }
@@ -812,19 +863,45 @@ function currentMonthKey() {
 function checkMonthRollover() {
   var key = currentMonthKey();
   if (S.currentMonth && S.currentMonth !== key) {
-    // New month: carry forward savings envelope balances
+    // New month!
     S.envelopes.forEach(function(env) {
+      // Carry forward savings balances
       if (env.isSavings) {
-        var avail = envAvailableBase(env.id); // balance at end of last month
+        var avail = envAvailableBase(env.id);
         env.carryForward = (env.carryForward||0) + avail;
-        // Reset assigned for new month (carry forward is separate)
+      }
+      // Promote next-month assignments to this month
+      if ((env.assignedNext||0) > 0) {
+        env.assigned = env.assignedNext;
+        env.assignedNext = 0;
       }
     });
     S.currentMonth = key;
+    S.viewingNextMonth = false;
+    S.rolloverDate = new Date().toISOString().slice(0,10);
     saveS();
+    toast('🎉 New month! Next month assignments are now active.');
   } else if (!S.currentMonth) {
     S.currentMonth = key;
   }
+}
+
+function manualRollover() {
+  if (!confirm('Simulate month rollover? This will carry forward savings balances and promote next-month assignments.')) return;
+  S.envelopes.forEach(function(env) {
+    if (env.isSavings) {
+      var avail = envAvailableBase(env.id);
+      env.carryForward = (env.carryForward||0) + avail;
+    }
+    if ((env.assignedNext||0) > 0) {
+      env.assigned = env.assignedNext;
+      env.assignedNext = 0;
+    }
+  });
+  S.rolloverDate = new Date().toISOString().slice(0,10);
+  S.viewingNextMonth = false;
+  saveS(); renderAll();
+  toast('✓ Month rolled over!');
 }
 
 function migrateToGroups() {
@@ -920,6 +997,15 @@ function ccPaymentEnv(cardId) {
   return S.envelopes.find(function(e){return e.id===card.paymentEnvId;});
 }
 
+// ── NEXT MONTH HELPERS ──
+function totalAssignedNext() {
+  var t = 0; S.envelopes.forEach(function(e){ t += (e.assignedNext||0); }); return t;
+}
+function readyToAssignNext() {
+  // RTA for next month = bank balance - this month assigned - next month assigned
+  return Math.round((bankBalance() - totalAssigned() - totalAssignedNext()) * 100) / 100;
+}
+
 // ── MONEY AGE: average age of dollars in bank (days) ──
 function moneyAge() {
   if (!S.income.length) return 0;
@@ -980,11 +1066,29 @@ function targetProgress(env) {
 // ═══════════════════════════════════════════
 // HEADER / RTA
 // ═══════════════════════════════════════════
+function toggleNextMonth() {
+  S.viewingNextMonth = !S.viewingNextMonth;
+  saveS();
+  var btn = document.getElementById('monthToggleBtn');
+  var banner = document.getElementById('nextMonthBanner');
+  if (S.viewingNextMonth) {
+    btn.textContent = '✨ Budgeting Next Month';
+    btn.className = 'month-toggle-btn next-month';
+    banner.className = 'next-month-banner show';
+  } else {
+    btn.textContent = '📅 Budget This Month';
+    btn.className = 'month-toggle-btn';
+    banner.className = 'next-month-banner';
+  }
+  renderEnvelopes(); updateRTA();
+}
+
 function updateRTA() {
   var bank = bankBalance();
-  var assigned = totalAssigned();
-  var rta = readyToAssign();
-  var pct = bank > 0 ? Math.min(assigned / bank * 100, 100) : 0;
+  var assigned = S.viewingNextMonth ? totalAssigned() + totalAssignedNext() : totalAssigned();
+  var assignedNext = totalAssignedNext();
+  var rta = S.viewingNextMonth ? readyToAssignNext() : readyToAssign();
+  var pct = bank > 0 ? Math.min(totalAssigned() / bank * 100, 100) : 0;
 
   var rtaNum = document.getElementById('rtaNum');
   var rtaBadge = document.getElementById('rtaBadge');
@@ -993,7 +1097,9 @@ function updateRTA() {
 
   rtaNum.textContent = (rta < 0 ? '-' : '') + fmt(Math.abs(rta));
   document.getElementById('rtaBank').textContent = 'Bank: ' + fmt(bank);
-  document.getElementById('rtaAssigned').textContent = 'Assigned: ' + fmt(assigned);
+  document.getElementById('rtaAssigned').textContent = S.viewingNextMonth
+    ? 'Next: ' + fmt(assignedNext)
+    : 'Assigned: ' + fmt(totalAssigned());
   var age = moneyAge();
   var ageEl = document.getElementById('moneyAge');
   if (ageEl) {
@@ -1028,18 +1134,46 @@ function updateRTA() {
 // INCOME
 // ═══════════════════════════════════════════
 function renderIncome() {
+  // Update total chip
+  var total = 0; S.income.forEach(function(i){total+=i.amount;});
+  var chip = document.getElementById('incomeTotalChip');
+  if (chip) chip.textContent = fmt(total);
+
+  // Toggle section visibility
+  var section = document.getElementById('incomeSection');
+  var chevron = document.getElementById('incomeChevron');
+  if (section) section.style.display = S.incomeCollapsed ? 'none' : 'block';
+  if (chevron) chevron.textContent = S.incomeCollapsed ? '▶' : '▼';
+
   var el = document.getElementById('incomeList');
-  if (!S.income.length) { el.innerHTML = '<div class="empty"><p>Add income to begin.</p></div>'; return; }
-  el.innerHTML = S.income.map(function(i) {
+  if (!S.income.length) { el.innerHTML = '<div class="empty"><p>Add income to begin.</p></div>'; updateRTA(); return; }
+
+  var sorted = S.income.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  el.innerHTML = '';
+  sorted.forEach(function(i) {
     var label = i.isReimb ? '🔁 Reimbursement' : '💰 Income';
     var sub = i.date + (i.isReimb && i.reimbEnvId ? ' → ' + envName(i.reimbEnvId) : '');
-    return '<div class="inc-item">' +
-      '<div class="inc-left"><div class="inc-name">' + esc(i.name) + '</div><div class="inc-sub">' + label + ' · ' + sub + '</div></div>' +
-      '<div class="inc-amt">' + fmt(i.amount) + '</div>' +
-      '<button class="del-btn" onclick="delIncome(\'' + i.id + '\')">×</button>' +
-      '</div>';
-  }).join('');
+    var div = document.createElement('div');
+    div.className = 'inc-item';
+    div.innerHTML =
+      '<div class="inc-left"><div class="inc-name">'+esc(i.name)+'</div><div class="inc-sub">'+label+' · '+sub+'</div></div>' +
+      '<div class="inc-amt">'+fmt(i.amount)+'</div>' +
+      '<button class="inc-edit-btn" id="iedit_'+i.id+'">✏️</button>' +
+      '<button class="del-btn" id="idel_'+i.id+'">×</button>';
+    (function(inc){
+      var editBtn = div.querySelector('#iedit_'+inc.id);
+      var delBtn = div.querySelector('#idel_'+inc.id);
+      if (editBtn) editBtn.addEventListener('click', function(){ openEditIncomeModal(inc.id); });
+      if (delBtn) delBtn.addEventListener('click', function(){ delIncome(inc.id); });
+    })(i);
+    el.appendChild(div);
+  });
   updateRTA();
+}
+
+function toggleIncomeSection() {
+  S.incomeCollapsed = !S.incomeCollapsed;
+  saveS(); renderIncome();
 }
 function envName(id) {
   var e = S.envelopes.find(function(e){return e.id===id;}); return e ? e.name : id;
@@ -1047,6 +1181,33 @@ function envName(id) {
 function delIncome(id) {
   S.income = S.income.filter(function(i){return i.id!==id;});
   saveS(); renderIncome(); renderEnvelopes(); renderSummary(); toast('Income removed');
+}
+
+var editingIncomeId = null;
+function openEditIncomeModal(id) {
+  editingIncomeId = id;
+  var inc = S.income.find(function(i){return i.id===id;});
+  if (!inc) return;
+  reimbOn = inc.isReimb || false;
+  document.getElementById('reimbTog').className = 'tog' + (reimbOn?' on':'');
+  document.getElementById('reimbCatField').style.display = reimbOn ? 'block' : 'none';
+  document.getElementById('incName').value = inc.name;
+  document.getElementById('incAmt').value = inc.amount;
+  document.getElementById('incDate').value = inc.date;
+  document.getElementById('incomeModalTitle').textContent = 'Edit Income';
+  document.getElementById('saveIncBtn').textContent = 'Save Changes';
+  document.getElementById('deleteIncBtn').style.display = 'block';
+  var sel = document.getElementById('reimbCat');
+  var ropts = '';
+  sortedGroups().forEach(function(g){
+    ropts += '<optgroup label="'+esc(g.name)+'">';
+    groupEnvelopes(g.id).forEach(function(e){
+      ropts += '<option value="'+e.id+'"'+(inc.reimbEnvId===e.id?' selected':'')+'>'+e.emoji+' '+e.name+'</option>';
+    });
+    ropts += '</optgroup>';
+  });
+  sel.innerHTML = ropts;
+  openModal('incomeModal');
 }
 
 // ═══════════════════════════════════════════
@@ -1128,7 +1289,7 @@ function renderEnvCard(env) {
       '<div class="env-icon" style="background:'+env.color+'55">'+env.emoji+'</div>' +
       '<div class="env-info">' +
         '<div class="env-name">'+esc(env.name)+'</div>' +
-        '<div class="env-assigned">'+fmt(assigned)+wk+'</div>' +
+        '<div class="env-assigned">'+fmt(assigned)+wk+(((env.assignedNext||0)>0)?' <span style="color:var(--acc);font-size:10px">next: '+fmt(env.assignedNext)+'</span>':'')+'</div>' +
       '</div>' +
       '<div class="env-right">' +
         '<div class="env-avail'+availClass+'">'+(avail<0?'-':'')+fmt(Math.abs(avail))+'</div>' +
@@ -1144,7 +1305,7 @@ function renderEnvCard(env) {
         '<div class="env-num"><div class="env-num-val'+(avail<0?' style=\"color:var(--red)\"':'')+'>'+(avail<0?'-':'')+fmt(Math.abs(avail))+'</div><div class="env-num-lbl">Available</div></div>' +
       '</div>' +
       '<div class="env-assign-row">' +
-        '<input class="env-input" id="assignInput_'+eid+'" type="number" inputmode="decimal" placeholder="Assign amount..." value="'+assigned+'">' +
+        '<input class="env-input" id="assignInput_'+eid+'" type="number" inputmode="decimal" placeholder="'+(S.viewingNextMonth?'Next month amount...':'Assign amount...')+'" value="'+(S.viewingNextMonth?(env.assignedNext||0):assigned)+'">' +
         '<button class="env-set-btn" data-eid="'+eid+'" onclick="setAssigned(this.dataset.eid)">Set</button>' +
       '</div>' +
       '<div class="env-actions">' +
@@ -1172,14 +1333,26 @@ function setAssigned(envId) {
   var val = parseFloat(input.value) || 0;
   var env = S.envelopes.find(function(e){return e.id===envId;});
   if (!env) return;
-  var diff = val - (env.assigned || 0);
-  var rta = readyToAssign();
-  if (diff > rta + 0.005) {
-    toast('⚠️ Only '+fmt(rta)+' left to assign!'); return;
+  if (S.viewingNextMonth) {
+    // Write to next month
+    var diff = val - (env.assignedNext||0);
+    var rtaNext = readyToAssignNext();
+    if (diff > rtaNext + 0.005) {
+      toast('⚠️ Only '+fmt(rtaNext)+' left for next month!'); return;
+    }
+    env.assignedNext = val;
+    saveS(); renderEnvelopes(); updateRTA();
+    toast('✨ Next month: '+env.name+' → '+fmt(val));
+  } else {
+    var diff = val - (env.assigned || 0);
+    var rta = readyToAssign();
+    if (diff > rta + 0.005) {
+      toast('⚠️ Only '+fmt(rta)+' left to assign!'); return;
+    }
+    env.assigned = val;
+    saveS(); renderEnvelopes(); updateRTA(); renderUnderfunded();
+    toast('✓ '+env.name+' set to '+fmt(val));
   }
-  env.assigned = val;
-  saveS(); renderEnvelopes(); updateRTA(); renderUnderfunded();
-  toast('✓ '+env.name+' set to '+fmt(val));
 }
 
 function moveToEnv(fromId) {
@@ -1634,6 +1807,7 @@ function go(v) {
   if (v==='debt') renderDebts();
   if (v==='history') renderHistory();
   if (v==='cards') renderCCTab();
+  if (v==='settings') renderRolloverSummary();
   if (v==='scheduled') renderScheduled();
   if (v==='reports') renderReports();
   var fab = document.getElementById('fab');
@@ -1673,6 +1847,10 @@ function closeModal(id) { document.getElementById(id).className='overlay'; }
 function modalBg(e, id) { if(e.target===document.getElementById(id)) closeModal(id); }
 
 function openIncomeModal() {
+  editingIncomeId = null;
+  document.getElementById('incomeModalTitle').textContent = 'Add Income';
+  document.getElementById('saveIncBtn').textContent = 'Add Income';
+  document.getElementById('deleteIncBtn').style.display = 'none';
   reimbOn = false;
   document.getElementById('reimbTog').className = 'tog';
   document.getElementById('reimbCatField').style.display = 'none';
@@ -1788,15 +1966,27 @@ function saveIncome() {
   if (!amt || amt <= 0) { toast('Enter a valid amount'); return; }
   if (!date) { toast('Pick a date'); return; }
 
-  if (isReimb && reimbEnvId) {
-    // Reimbursement: goes back to the envelope, not to income pool
-    var env = S.envelopes.find(function(e){return e.id===reimbEnvId;});
-    if (env) { env.assigned = (env.assigned||0) + amt; }
+  if (editingIncomeId) {
+    // Edit existing
+    var inc = S.income.find(function(i){return i.id===editingIncomeId;});
+    if (inc) { inc.name=name; inc.amount=amt; inc.date=date; inc.isReimb=isReimb; inc.reimbEnvId=reimbEnvId; }
+    editingIncomeId = null;
+    toast('✓ Updated!');
+  } else {
+    // New income
+    if (isReimb && reimbEnvId) {
+      var env = S.envelopes.find(function(e){return e.id===reimbEnvId;});
+      if (env) { env.assigned = (env.assigned||0) + amt; }
+    }
+    S.income.push({id:uid(), name:name, amount:amt, date:date, isReimb:isReimb, reimbEnvId:reimbEnvId});
+    toast('💰 Income added!');
   }
-
-  S.income.push({id:uid(), name:name, amount:amt, date:date, isReimb:isReimb, reimbEnvId:reimbEnvId});
   saveS(); closeModal('incomeModal'); renderIncome(); renderEnvelopes(); updateRTA();
-  toast('💰 Income added!');
+  // Reset modal to "add" state
+  document.getElementById('incomeModalTitle').textContent = 'Add Income';
+  document.getElementById('saveIncBtn').textContent = 'Add Income';
+  document.getElementById('deleteIncBtn').style.display = 'none';
+  editingIncomeId = null;
 }
 
 function saveExp() {
@@ -2266,10 +2456,49 @@ function renderMonthCompare() {
     '</div>';
 }
 
+function renderRolloverSummary() {
+  var lastEl = document.getElementById('lastRolloverDate');
+  if (lastEl) lastEl.textContent = S.rolloverDate ? 'Last: ' + S.rolloverDate : 'Never — happens automatically at month end';
+
+  var listEl = document.getElementById('savingsRolloverList');
+  if (!listEl) return;
+  var savingsEnvs = S.envelopes.filter(function(e){return e.isSavings;});
+  if (!savingsEnvs.length) {
+    listEl.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:6px 0">No savings envelopes yet. Toggle any envelope to 🐷 Savings mode.</div>';
+    return;
+  }
+  listEl.innerHTML = savingsEnvs.map(function(env) {
+    var avail = envAvailableBase(env.id);
+    var carry = env.carryForward || 0;
+    return '<div class="rollover-env-row">' +
+      '<span class="rollover-env-name">'+env.emoji+' '+esc(env.name)+'</span>' +
+      '<div style="text-align:right">' +
+        '<div class="rollover-carry">'+fmt(carry)+' carried</div>' +
+        '<div style="font-size:10px;color:var(--text3)">'+fmt(avail)+' available now</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  // Restore next month toggle button state
+  var btn = document.getElementById('monthToggleBtn');
+  var banner = document.getElementById('nextMonthBanner');
+  if (btn && banner) {
+    if (S.viewingNextMonth) {
+      btn.textContent = '✨ Budgeting Next Month';
+      btn.className = 'month-toggle-btn next-month';
+      banner.className = 'next-month-banner show';
+    } else {
+      btn.textContent = '📅 Budget This Month';
+      btn.className = 'month-toggle-btn';
+      banner.className = 'next-month-banner';
+    }
+  }
+}
+
 function renderAll() {
   renderIncome(); renderEnvelopes(); renderExpenses(); renderSummary();
   renderOwed(); renderGoals(); renderDebts(); renderHistory(); renderCCTab();
-  renderUnderfunded(); renderScheduled();
+  renderUnderfunded(); renderScheduled(); renderRolloverSummary();
   updateRTA(); applyTheme();
   document.getElementById('weekTog').className = 'tog' + (S.weeklyMode?' on':'');
   document.getElementById('darkTog').className = 'tog' + (S.darkMode?' on':'');
@@ -2388,6 +2617,7 @@ window.onload = function() {
   document.getElementById('ccModal').addEventListener('click', function(e){modalBg(e,'ccModal');});
 
   // Settings
+  document.getElementById('manualRolloverBtn').addEventListener('click', manualRollover);
   document.getElementById('weekTog').addEventListener('click', toggleWeekMode);
   document.getElementById('darkTog').addEventListener('click', toggleDark);
   document.getElementById('exportBtn').addEventListener('click', exportData);
