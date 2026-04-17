@@ -686,20 +686,26 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 </div><!-- /views -->
 
-<!-- SPEED DIAL BACKDROP -->
-<div id="dialBackdrop" onclick="closeDial()" style="display:none;position:fixed;inset:0;z-index:190;background:rgba(0,0,0,0.35)"></div>
-<!-- SPEED DIAL -->
-<div class="speed-dial" id="speedDial">
-  <div class="dial-option" id="dialExpense">
-    <div class="dial-label">Log Expense</div>
-    <button class="dial-btn" style="background:linear-gradient(135deg,#f87171,#ef4444)" id="dialExpBtn">📝</button>
-  </div>
-  <div class="dial-option" id="dialIncome">
-    <div class="dial-label">Add Income</div>
-    <button class="dial-btn" style="background:linear-gradient(135deg,#4ade80,#16a34a)" id="dialIncBtn">💰</button>
-  </div>
-  <button class="fab" id="fab">＋</button>
+<!-- FAB QUICK SHEET -->
+<div class="fab-sheet-overlay" id="fabOverlay" onclick="closeDial()"></div>
+<div class="fab-sheet" id="fabSheet">
+  <div class="fab-sheet-title">Quick Add</div>
+  <button class="fab-sheet-btn" id="dialIncBtn">
+    <div class="fab-sheet-ico" style="background:var(--green-dim)">💰</div>
+    <div class="fab-sheet-label">
+      <div class="fab-sheet-label-title">Add Income</div>
+      <div class="fab-sheet-label-sub">Log a paycheck or reimbursement</div>
+    </div>
+  </button>
+  <button class="fab-sheet-btn" id="dialExpBtn">
+    <div class="fab-sheet-ico" style="background:var(--red-dim)">📝</div>
+    <div class="fab-sheet-label">
+      <div class="fab-sheet-label-title">Log Expense</div>
+      <div class="fab-sheet-label-sub">Record a purchase or payment</div>
+    </div>
+  </button>
 </div>
+<button class="fab" id="fab">＋</button>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
