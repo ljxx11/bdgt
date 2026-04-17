@@ -386,6 +386,15 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .rollover-env-row:last-child{border-bottom:none}
 .rollover-env-name{font-size:13px;font-weight:700;color:var(--text)}
 .rollover-carry{font-size:13px;font-weight:800;color:var(--green)}
+
+/* ── SPEED DIAL ── */
+.speed-dial{position:fixed;bottom:calc(var(--nav)+16px);right:16px;z-index:90;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(168,85,247,.5);transition:.2s;border:none;cursor:pointer;font-family:'Nunito',sans-serif}
+.fab:active{transform:scale(.9)}
+.dial-option{display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}
+.dial-option.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.dial-btn{width:44px;height:44px;border-radius:50%;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.4);border:none;cursor:pointer;font-family:'Nunito',sans-serif}
+.dial-label{background:var(--surf2);color:var(--text);font-size:12px;font-weight:800;padding:5px 12px;border-radius:20px;white-space:nowrap;border:1px solid var(--border)}
 </style>
 </head>
 <body>
@@ -677,8 +686,18 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 </div><!-- /views -->
 
-<!-- FAB -->
-<button class="fab" id="fab">＋</button>
+<!-- SPEED DIAL -->
+<div class="speed-dial" id="speedDial">
+  <div class="dial-option" id="dialExpense">
+    <div class="dial-label">Log Expense</div>
+    <button class="dial-btn" style="background:linear-gradient(135deg,#f87171,#ef4444)" id="dialExpBtn">📝</button>
+  </div>
+  <div class="dial-option" id="dialIncome">
+    <div class="dial-label">Add Income</div>
+    <button class="dial-btn" style="background:linear-gradient(135deg,#4ade80,#16a34a)" id="dialIncBtn">💰</button>
+  </div>
+  <button class="fab" id="fab">＋</button>
+</div>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
@@ -849,6 +868,8 @@ function loadS() {
     if(e.isSavings===undefined) e.isSavings=false;
     if(e.carryForward===undefined) e.carryForward=0;
     if(e.assignedNext===undefined) e.assignedNext=0;
+    // Clean up carry-forward on non-savings envelopes (migration fix)
+    if(!e.isSavings) e.carryForward=0;
   });
   if(S.viewingNextMonth===undefined) S.viewingNextMonth=false;
   // Carry forward savings if new month
@@ -865,10 +886,12 @@ function checkMonthRollover() {
   if (S.currentMonth && S.currentMonth !== key) {
     // New month!
     S.envelopes.forEach(function(env) {
-      // Carry forward savings balances
+      // Carry forward savings balances (snapshot, not cumulative)
       if (env.isSavings) {
         var avail = envAvailableBase(env.id);
-        env.carryForward = (env.carryForward||0) + avail;
+        env.carryForward = Math.max(0, avail);
+      } else {
+        env.carryForward = 0;
       }
       // Promote next-month assignments to this month
       if ((env.assignedNext||0) > 0) {
@@ -887,11 +910,14 @@ function checkMonthRollover() {
 }
 
 function manualRollover() {
-  if (!confirm('Simulate month rollover? This will carry forward savings balances and promote next-month assignments.')) return;
+  if (!confirm('Simulate month rollover? Savings balances will carry forward and next-month assignments will become active.')) return;
   S.envelopes.forEach(function(env) {
     if (env.isSavings) {
+      // Replace carryForward with current available — don't stack on top of previous
       var avail = envAvailableBase(env.id);
-      env.carryForward = (env.carryForward||0) + avail;
+      env.carryForward = Math.max(0, avail); // snapshot, not cumulative
+    } else {
+      env.carryForward = 0; // regular envelopes never carry
     }
     if ((env.assignedNext||0) > 0) {
       env.assigned = env.assignedNext;
@@ -1799,7 +1825,7 @@ function go(v) {
     var tab = document.querySelector('.tab[data-v="'+v+'"]');
     if (tab) tab.className = 'tab on';
   }
-  closeMoreMenu();
+  closeMoreMenu(); closeDial();
   if (v==='expenses') renderExpenses();
   if (v==='summary') renderSummary();
   if (v==='owed') renderOwed();
@@ -1825,14 +1851,32 @@ function closeMoreMenu() {
 // ═══════════════════════════════════════════
 // FAB
 // ═══════════════════════════════════════════
+var dialOpen = false;
 function fabClick() {
-  if (currentView==='budget') openIncomeModal();
-  else if (currentView==='expenses') openExpModal();
+  if (currentView === 'budget') {
+    // Toggle speed dial on budget tab
+    dialOpen = !dialOpen;
+    document.getElementById('dialIncome').className = 'dial-option' + (dialOpen?' open':'');
+    document.getElementById('dialExpense').className = 'dial-option' + (dialOpen?' open':'');
+    document.getElementById('fab').textContent = dialOpen ? '✕' : '＋';
+    return;
+  }
+  closeDial();
+  if (currentView==='expenses') openExpModal();
   else if (currentView==='goals') openGoalModal();
   else if (currentView==='debt') openDebtModal();
   else if (currentView==='owed') openOwedModal('toMe');
   else if (currentView==='cards') openCCModal(null);
   else if (currentView==='scheduled') openSchedModal();
+}
+function closeDial() {
+  dialOpen = false;
+  var di = document.getElementById('dialIncome');
+  var de = document.getElementById('dialExpense');
+  var fab = document.getElementById('fab');
+  if(di) di.className = 'dial-option';
+  if(de) de.className = 'dial-option';
+  if(fab) fab.textContent = '＋';
 }
 
 // ═══════════════════════════════════════════
@@ -2527,6 +2571,12 @@ window.onload = function() {
 
   // FAB
   document.getElementById('fab').addEventListener('click', fabClick);
+  document.getElementById('dialIncBtn').addEventListener('click', function(){ closeDial(); openIncomeModal(); });
+  document.getElementById('dialExpBtn').addEventListener('click', function(){ closeDial(); openExpModal(); });
+  // Close dial on tap outside
+  document.addEventListener('click', function(e){
+    if (dialOpen && !e.target.closest('#speedDial')) closeDial();
+  });
 
   // Theme
   document.getElementById('themeBtn').addEventListener('click', toggleDark);
