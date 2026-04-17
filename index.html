@@ -865,14 +865,14 @@ function fmtS(n) {
 function bankBalance() {
   var total = 0;
   S.income.forEach(function(i) { total += i.amount; });
-  return total;
+  return Math.round(total * 100) / 100;
 }
 function totalAssigned() {
   var total = 0;
   S.envelopes.forEach(function(e) { total += (e.assigned || 0); });
-  return total;
+  return Math.round(total * 100) / 100;
 }
-function readyToAssign() { return bankBalance() - totalAssigned(); }
+function readyToAssign() { return Math.round((bankBalance() - totalAssigned()) * 100) / 100; }
 function envSpent(envId) {
   var total = 0;
   S.expenses.forEach(function(e) { if (e.envId === envId) total += e.amount; });
@@ -1002,7 +1002,7 @@ function updateRTA() {
   }
   rtaFill.style.width = pct + '%';
 
-  if (rta < 0) {
+  if (rta < -0.005) {
     rtaNum.className = 'rta-num over';
     rtaBadge.className = 'rta-badge over';
     rtaBadge.textContent = '⚠️ Over Budget';
