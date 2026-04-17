@@ -388,12 +388,12 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .rollover-carry{font-size:13px;font-weight:800;color:var(--green)}
 
 /* ── SPEED DIAL ── */
-.speed-dial{position:fixed;bottom:calc(var(--nav)+16px);right:16px;z-index:90;display:flex;flex-direction:column-reverse;align-items:flex-end;gap:10px}
+.speed-dial{position:fixed;bottom:calc(var(--nav)+16px);right:16px;z-index:200;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
 .fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(168,85,247,.5);transition:.2s;border:none;cursor:pointer;font-family:'Nunito',sans-serif;flex-shrink:0}
 .fab:active{transform:scale(.9)}
-.dial-option{display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(20px);pointer-events:none;transition:.25s;flex-shrink:0}
+.dial-option{display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .2s,transform .2s}
 .dial-option.open{opacity:1;transform:translateY(0);pointer-events:auto}
-.dial-btn{width:44px;height:44px;border-radius:50%;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.4);border:none;cursor:pointer;font-family:'Nunito',sans-serif;flex-shrink:0}
+.dial-btn{width:46px;height:46px;border-radius:50%;color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.5);border:none;cursor:pointer;font-family:'Nunito',sans-serif;flex-shrink:0}
 .dial-label{background:var(--surf2);color:var(--text);font-size:12px;font-weight:800;padding:5px 12px;border-radius:20px;white-space:nowrap;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.3)}
 </style>
 </head>
@@ -686,17 +686,19 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 </div><!-- /views -->
 
+<!-- SPEED DIAL BACKDROP -->
+<div id="dialBackdrop" onclick="closeDial()" style="display:none;position:fixed;inset:0;z-index:190;background:rgba(0,0,0,0.35)"></div>
 <!-- SPEED DIAL -->
 <div class="speed-dial" id="speedDial">
-  <button class="fab" id="fab">＋</button>
-  <div class="dial-option" id="dialIncome">
-    <div class="dial-label">Add Income</div>
-    <button class="dial-btn" style="background:linear-gradient(135deg,#4ade80,#16a34a)" id="dialIncBtn">💰</button>
-  </div>
   <div class="dial-option" id="dialExpense">
     <div class="dial-label">Log Expense</div>
     <button class="dial-btn" style="background:linear-gradient(135deg,#f87171,#ef4444)" id="dialExpBtn">📝</button>
   </div>
+  <div class="dial-option" id="dialIncome">
+    <div class="dial-label">Add Income</div>
+    <button class="dial-btn" style="background:linear-gradient(135deg,#4ade80,#16a34a)" id="dialIncBtn">💰</button>
+  </div>
+  <button class="fab" id="fab">＋</button>
 </div>
 
 <!-- TOAST -->
