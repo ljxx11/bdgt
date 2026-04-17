@@ -270,8 +270,6 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .btn-d{width:100%;padding:14px;background:var(--red-dim);color:var(--red);border-radius:var(--r);font-size:14px;font-weight:700;font-family:'Nunito',sans-serif;margin-top:8px}
 
 /* FAB */
-.fab{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 24px);right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(168,85,247,.5);z-index:90;transition:.15s}
-.fab:active{transform:scale(.9)}
 
 /* EMPTY */
 .empty{text-align:center;padding:40px 20px;color:var(--text3)}
@@ -389,15 +387,17 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 /* ── SPEED DIAL ── */
 .speed-dial{position:fixed;bottom:calc(var(--nav)+16px);right:16px;z-index:200;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
-.fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(168,85,247,.5);transition:.2s;border:none;cursor:pointer;font-family:'Nunito',sans-serif;flex-shrink:0}
-.fab:active{transform:scale(.9)}
 .dial-option{display:none;align-items:center;gap:10px}
 .dial-option.open{display:flex}
 .dial-btn{width:46px;height:46px;border-radius:50%;color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.5);border:none;cursor:pointer;font-family:'Nunito',sans-serif;flex-shrink:0}
 .dial-label{background:var(--surf2);color:var(--text);font-size:12px;font-weight:800;padding:5px 12px;border-radius:20px;white-space:nowrap;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+/* ── FAB ── */
+
 </style>
 </head>
 <body>
+<button id="expFab" onclick="openExpModal()" style="position:fixed;bottom:24px;right:16px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#e879f9,#a855f7);color:white;font-size:22px;border:none;cursor:pointer;z-index:9999;box-shadow:0 6px 20px rgba(168,85,247,0.5);display:flex;align-items:center;justify-content:center;font-family:sans-serif">📝</button>
 <div class="app">
 
 <header class="hdr">
@@ -686,11 +686,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 </div><!-- /views -->
 
-<!-- FAB QUICK SHEET -->
-<div class="fab-sheet-overlay" id="fabOverlay" onclick="closeDial()"></div>
-<div class="fab-sheet" id="fabSheet">
-  <div class="fab-sheet-title">Quick Add</div>
-  <button class="fab-sheet-btn" id="dialIncBtn">
+<button class="fab-sheet-btn" id="dialIncBtn">
     <div class="fab-sheet-ico" style="background:var(--green-dim)">💰</div>
     <div class="fab-sheet-label">
       <div class="fab-sheet-label-title">Add Income</div>
@@ -705,12 +701,12 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     </div>
   </button>
 </div>
-<button class="fab" id="fab">＋</button>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 </div><!-- /app -->
+
 
 <!-- ══════════════ MODALS ══════════════ -->
 
@@ -1829,7 +1825,7 @@ function go(v) {
     var tab = document.querySelector('.tab[data-v="'+v+'"]');
     if (tab) tab.className = 'tab on';
   }
-  closeMoreMenu(); closeDial();
+  closeMoreMenu();
   if (v==='expenses') renderExpenses();
   if (v==='summary') renderSummary();
   if (v==='owed') renderOwed();
@@ -1855,47 +1851,6 @@ function closeMoreMenu() {
 // ═══════════════════════════════════════════
 // FAB
 // ═══════════════════════════════════════════
-var dialOpen = false;
-function fabClick() {
-  if (currentView === 'budget') {
-    // Toggle speed dial on budget tab
-    dialOpen = !dialOpen;
-    var di = document.getElementById('dialIncome');
-    var de = document.getElementById('dialExpense');
-    var fab = document.getElementById('fab');
-    var bd = document.getElementById('dialBackdrop');
-    if(di) { di.className = 'dial-option' + (dialOpen?' open':''); di.style.display = dialOpen?'flex':'none'; }
-    if(de) { de.className = 'dial-option' + (dialOpen?' open':''); de.style.display = dialOpen?'flex':'none'; }
-    if(fab) fab.textContent = dialOpen ? '✕' : '＋';
-    if(bd) bd.style.display = dialOpen ? 'block' : 'none';
-    return;
-  }
-  closeDial();
-  if (currentView==='expenses') openExpModal();
-  else if (currentView==='goals') openGoalModal();
-  else if (currentView==='debt') openDebtModal();
-  else if (currentView==='owed') openOwedModal('toMe');
-  else if (currentView==='cards') openCCModal(null);
-  else if (currentView==='scheduled') openSchedModal();
-}
-function closeDial() {
-  dialOpen = false;
-  var di = document.getElementById('dialIncome');
-  var de = document.getElementById('dialExpense');
-  var fab = document.getElementById('fab');
-  var bd = document.getElementById('dialBackdrop');
-  if(di) { di.className = 'dial-option'; di.style.display = 'none'; }
-  if(de) { de.className = 'dial-option'; de.style.display = 'none'; }
-  if(fab) fab.textContent = '＋';
-  if(bd) bd.style.display = 'none';
-}
-
-// ═══════════════════════════════════════════
-// MODALS
-// ═══════════════════════════════════════════
-var reimbOn = false;
-var creditOn = false;
-var editingOwedType = 'toMe';
 
 function openModal(id) { document.getElementById(id).className='overlay open'; }
 function closeModal(id) { document.getElementById(id).className='overlay'; }
@@ -2576,9 +2531,7 @@ window.onload = function() {
   });
 
   // FAB
-  document.getElementById('fab').addEventListener('click', fabClick);
-  document.getElementById('dialIncBtn').addEventListener('click', function(){ closeDial(); openIncomeModal(); });
-  document.getElementById('dialExpBtn').addEventListener('click', function(){ closeDial(); openExpModal(); });
+  document.getElementById('expFab').addEventListener('click', function(e){ e.stopPropagation(); openExpModal(); });
 
 
   // Theme
@@ -2764,5 +2717,6 @@ window.onload = function() {
     <button class="btn-s" id="cancelSchedBtn">Cancel</button>
   </div>
 </div>
+
 </body>
 </html>
