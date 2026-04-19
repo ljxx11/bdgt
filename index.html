@@ -1331,7 +1331,7 @@ function renderEnvCard(env) {
         '<div class="env-num"><div class="env-num-val'+(avail<0?' style=\"color:var(--red)\"':'')+'>'+(avail<0?'-':'')+fmt(Math.abs(avail))+'</div><div class="env-num-lbl">Available</div></div>' +
       '</div>' +
       '<div class="env-assign-row">' +
-        '<input class="env-input" id="assignInput_'+eid+'" type="number" inputmode="decimal" placeholder="'+(S.viewingNextMonth?'Next month amount...':'Assign amount...')+'" value="'+(S.viewingNextMonth?(env.assignedNext||0):assigned)+'">' +
+        '<input class="env-input" id="assignInput_'+eid+'" type="number" inputmode="decimal" placeholder="'+(S.viewingNextMonth?'Next month amount...':'Assign amount...')+'" value="'+(S.viewingNextMonth?((env.assignedNext||0).toFixed(2)):assigned.toFixed(2))+'">' +
         '<button class="env-set-btn" data-eid="'+eid+'" onclick="setAssigned(this.dataset.eid)">Set</button>' +
       '</div>' +
       '<div class="env-actions">' +
@@ -1356,7 +1356,7 @@ function toggleEnv(id) {
 
 function setAssigned(envId) {
   var input = document.getElementById('assignInput_'+envId);
-  var val = parseFloat(input.value) || 0;
+  var val = Math.round((parseFloat(input.value) || 0) * 100) / 100;
   var env = S.envelopes.find(function(e){return e.id===envId;});
   if (!env) return;
   if (S.viewingNextMonth) {
