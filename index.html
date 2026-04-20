@@ -472,9 +472,9 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
       </div>
     </div>
     <div class="underfunded-banner" id="underfundedBanner" style="display:none">
-      <div class="uf-top">
-        <span class="uf-title">⚡ Underfunded Envelopes</span>
-        <button class="uf-auto-btn" id="autoAssignBtn">Auto-Assign</button>
+      <div class="uf-top" onclick="toggleUnderfunded()" style="cursor:pointer">
+        <span class="uf-title">⚡ Underfunded Envelopes <span id="ufChevron">▼</span></span>
+        <button class="uf-auto-btn" id="autoAssignBtn" onclick="event.stopPropagation();autoAssign()">Auto-Assign</button>
       </div>
       <div id="underfundedList"></div>
     </div>
