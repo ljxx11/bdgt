@@ -394,6 +394,17 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 /* ── FAB ── */
 
+
+/* ── TARGET SUMMARY BAR ── */
+.target-summary-bar{background:var(--surf2);border:1px solid var(--border);border-radius:var(--rsm);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.tsb-left{flex:1;min-width:0}
+.tsb-label{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.tsb-track{height:6px;background:var(--surf3);border-radius:3px;overflow:hidden}
+.tsb-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--acc),var(--green));transition:.4s}
+.tsb-fill.over{background:var(--red)}
+.tsb-right{text-align:right;flex-shrink:0}
+.tsb-numbers{font-size:13px;font-weight:800;color:var(--text)}
+.tsb-status{font-size:11px;font-weight:700;margin-top:2px}
 </style>
 </head>
 <body>
@@ -450,6 +461,16 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="warn" id="warnBanner"><span>⚠️ You've assigned more than your bank balance!</span></div>
     <div class="week-banner" id="weekBanner">📅 Weekly mode — showing per-paycheck amounts</div>
     <div class="next-month-banner" id="nextMonthBanner">✨ Next Month View — assigning money for next month</div>
+    <div class="target-summary-bar" id="targetSummaryBar" style="display:none">
+      <div class="tsb-left">
+        <div class="tsb-label">Monthly Targets Total</div>
+        <div class="tsb-track"><div class="tsb-fill" id="tsbFill" style="width:0%"></div></div>
+      </div>
+      <div class="tsb-right">
+        <div class="tsb-numbers" id="tsbNumbers"></div>
+        <div class="tsb-status" id="tsbStatus"></div>
+      </div>
+    </div>
     <div class="underfunded-banner" id="underfundedBanner" style="display:none">
       <div class="uf-top">
         <span class="uf-title">⚡ Underfunded Envelopes</span>
@@ -1049,6 +1070,24 @@ function moneyAge() {
   return totalAmt > 0 ? Math.round(weightedDays / totalAmt) : 0;
 }
 
+// ── TOTAL TARGETS ──
+function totalTargets() {
+  var t = 0;
+  S.envelopes.forEach(function(env) {
+    if (env.target && env.target.amount) t += env.target.amount;
+  });
+  return Math.round(t * 100) / 100;
+}
+function monthlyIncome() {
+  // Average weekly income × 4
+  if (!S.income.length) return 0;
+  var total = 0;
+  S.income.forEach(function(i){ if(!i.isReimb) total += i.amount; });
+  // Simple: just use bank balance as monthly income proxy
+  // Better: sum all non-reimb income
+  return Math.round(total * 100) / 100;
+}
+
 // ── TOTAL CC DEBT ──
 function totalCCDebt() {
   var t = 0; S.creditCards.forEach(function(c){ t += c.balance||0; }); return t;
@@ -1493,7 +1532,7 @@ function saveTarget() {
   var byDate = document.getElementById('targetDate').value;
   if (!amount) { env.target = null; }
   else { env.target = {type:type, amount:amount, byDate:byDate||null}; }
-  saveS(); closeModal('targetModal'); renderEnvelopes();
+  saveS(); closeModal('targetModal'); renderEnvelopes(); renderTargetSummary();
   toast(amount ? '🎯 Target set!' : 'Target removed');
 }
 function clearTarget() {
@@ -2194,6 +2233,38 @@ function getUnderfunded() {
   return items;
 }
 
+function renderTargetSummary() {
+  var bar = document.getElementById('targetSummaryBar');
+  if (!bar) return;
+  var targets = totalTargets();
+  if (targets === 0) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  var income = monthlyIncome();
+  var pct = income > 0 ? Math.min(targets / income * 100, 120) : 0;
+  var over = targets > income && income > 0;
+  var remaining = income - targets;
+  var fill = document.getElementById('tsbFill');
+  var numbers = document.getElementById('tsbNumbers');
+  var status = document.getElementById('tsbStatus');
+  if (fill) {
+    fill.style.width = Math.min(pct, 100) + '%';
+    fill.className = 'tsb-fill' + (over ? ' over' : '');
+  }
+  if (numbers) numbers.textContent = fmt(targets) + ' / ' + fmt(income);
+  if (status) {
+    if (income === 0) {
+      status.textContent = 'Add income to compare';
+      status.style.color = 'var(--text3)';
+    } else if (over) {
+      status.textContent = '⚠️ ' + fmt(Math.abs(remaining)) + ' over income';
+      status.style.color = 'var(--red)';
+    } else {
+      status.textContent = fmt(remaining) + ' unbudgeted';
+      status.style.color = 'var(--green)';
+    }
+  }
+}
+
 function renderUnderfunded() {
   var items = getUnderfunded();
   var banner = document.getElementById('underfundedBanner');
@@ -2503,7 +2574,7 @@ function renderRolloverSummary() {
 function renderAll() {
   renderIncome(); renderEnvelopes(); renderExpenses(); renderSummary();
   renderOwed(); renderGoals(); renderDebts(); renderHistory(); renderCCTab();
-  renderUnderfunded(); renderScheduled(); renderRolloverSummary();
+  renderUnderfunded(); renderScheduled(); renderRolloverSummary(); renderTargetSummary();
   updateRTA(); applyTheme();
   document.getElementById('weekTog').className = 'tog' + (S.weeklyMode?' on':'');
   document.getElementById('darkTog').className = 'tog' + (S.darkMode?' on':'');
