@@ -1676,25 +1676,60 @@ function renderExpenses() {
   document.getElementById('expCnt').textContent = cnt;
   document.getElementById('expAvg').textContent = cnt ? fmtS(total/cnt) : '$0';
   var el = document.getElementById('expList');
-  if (!cnt) { el.innerHTML = '<div class="empty"><div class="ei">📝</div><p>No expenses yet.<br>Tap + to log one.</p></div>'; return; }
+  if (!cnt) { el.innerHTML = '<div class="empty"><div class="ei">📝</div><p>No expenses yet.</p></div>'; return; }
+  el.innerHTML = '';
   var sorted = S.expenses.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-  el.innerHTML = sorted.map(function(e) {
+  sorted.forEach(function(e) {
     var env = S.envelopes.find(function(v){return v.id===e.envId;});
     var clr = env ? env.color+'55' : 'var(--surf2)';
     var dt = new Date(e.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
     var tags = (e.isCredit ? '<span class="tag credit">CREDIT</span>' : '') + (e.isReimb ? '<span class="tag reimb">REIMB</span>' : '');
-    return '<div class="exp-item">' +
-      '<div class="exp-ico" style="background:'+clr+'">' + (env ? env.emoji : '📦') + '</div>' +
-      '<div class="exp-body"><div class="exp-desc">' + esc(e.desc) + '</div>' +
-      '<div class="exp-meta">' + (env?esc(env.name):e.envId) + (tags?' · '+tags:'') + '</div></div>' +
-      '<div class="exp-right"><div class="exp-amt">' + fmt(e.amount) + '</div><div class="exp-date">' + dt + '</div></div>' +
-      '<button class="del-btn" onclick="delExp(\''+e.id+'\')">×</button>' +
-      '</div>';
-  }).join('');
+    var div = document.createElement('div');
+    div.className = 'exp-item';
+    div.innerHTML =
+      '<div class="exp-ico" style="background:'+clr+'">'+(env?env.emoji:'📦')+'</div>'+
+      '<div class="exp-body"><div class="exp-desc">'+esc(e.desc)+'</div>'+
+      '<div class="exp-meta">'+(env?esc(env.name):e.envId)+(tags?' · '+tags:'')+'</div></div>'+
+      '<div class="exp-right"><div class="exp-amt">'+fmt(e.amount)+'</div><div class="exp-date">'+dt+'</div></div>'+
+      '<button class="inc-edit-btn" id="eedit_'+e.id+'">✏️</button>'+
+      '<button class="del-btn" id="edel_'+e.id+'">×</button>';
+    (function(exp){
+      var eb = div.querySelector('#eedit_'+exp.id);
+      var db = div.querySelector('#edel_'+exp.id);
+      if(eb) eb.addEventListener('click', function(){ openEditExpModal(exp.id); });
+      if(db) db.addEventListener('click', function(){ delExp(exp.id); });
+    })(e);
+    el.appendChild(div);
+  });
 }
 function delExp(id) {
   S.expenses = S.expenses.filter(function(e){return e.id!==id;});
   saveS(); renderExpenses(); renderEnvelopes(); renderSummary(); toast('Expense removed');
+}
+var editingExpId = null;
+function openEditExpModal(id) {
+  editingExpId = id;
+  var exp = S.expenses.find(function(e){return e.id===id;});
+  if (!exp) return;
+  creditOn = exp.isCredit || false;
+  document.getElementById('creditTog').className = 'tog'+(creditOn?' on':'');
+  var ccf = document.getElementById('ccSelectField');
+  if(ccf) ccf.style.display = creditOn?'block':'none';
+  document.getElementById('expDesc').value = exp.desc||'';
+  document.getElementById('expAmt').value = exp.amount;
+  document.getElementById('expDate').value = exp.date;
+  var sel = document.getElementById('expCat');
+  var opts = '';
+  sortedGroups().forEach(function(g){
+    opts += '<optgroup label="'+esc(g.name)+'">';
+    groupEnvelopes(g.id).forEach(function(e){ opts += '<option value="'+e.id+'"'+(exp.envId===e.id?' selected':'')+'>'+e.emoji+' '+e.name+'</option>'; });
+    opts += '</optgroup>';
+  });
+  sel.innerHTML = opts;
+  var mt = document.getElementById('expModalTitle'); if(mt) mt.textContent = 'Edit Expense';
+  var sb = document.getElementById('saveExpBtn'); if(sb) sb.textContent = 'Save Changes';
+  var db = document.getElementById('deleteExpBtn'); if(db) db.style.display = 'block';
+  openModal('expModal');
 }
 
 // ═══════════════════════════════════════════
@@ -1925,6 +1960,10 @@ function openExpModal() {
   if (document.getElementById('expModalTitle')) document.getElementById('expModalTitle').textContent = 'Log Expense';
   if (document.getElementById('saveExpBtn')) document.getElementById('saveExpBtn').textContent = 'Log Expense';
   if (document.getElementById('deleteExpBtn')) document.getElementById('deleteExpBtn').style.display = 'none';
+  editingExpId = null;
+  var mt=document.getElementById('expModalTitle'); if(mt) mt.textContent='Log Expense';
+  var sb=document.getElementById('saveExpBtn'); if(sb) sb.textContent='Log Expense';
+  var db=document.getElementById('deleteExpBtn'); if(db) db.style.display='none';
   creditOn = false;
   document.getElementById('creditTog').className = 'tog';
   document.getElementById('expDesc').value = '';
@@ -2282,6 +2321,14 @@ function renderTargetSummary() {
   }
 }
 
+var ufCollapsed = false;
+function toggleUnderfunded() {
+  ufCollapsed = !ufCollapsed;
+  var list = document.getElementById('underfundedList');
+  var chev = document.getElementById('ufChevron');
+  if(list) list.style.display = ufCollapsed ? 'none' : 'block';
+  if(chev) chev.textContent = ufCollapsed ? '▶' : '▼';
+}
 function renderUnderfunded() {
   var items = getUnderfunded();
   var banner = document.getElementById('underfundedBanner');
@@ -2732,7 +2779,7 @@ window.onload = function() {
   document.getElementById('debtModal').addEventListener('click', function(e){modalBg(e,'debtModal');});
 
   // Auto-assign
-  document.getElementById('autoAssignBtn').addEventListener('click', autoAssign);
+  // autoAssignBtn uses inline onclick
 
   // Scheduled modal
   document.getElementById('saveSchedBtn').addEventListener('click', saveSched);
