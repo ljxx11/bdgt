@@ -171,7 +171,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 /* STAT CHIPS */
 .stat-row{display:flex;gap:10px;margin-bottom:12px}
 .stat{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:14px;flex:1;text-align:center}
-.stat-val{font-family:'Playfair Display',serif;font-size:20px;color:var(--text)}
+.stat-val{font-family:'Playfair Display',serif;font-size:17px;color:var(--text)}
 .stat-lbl{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
 
 /* SUMMARY */
@@ -1736,10 +1736,10 @@ function openEditExpModal(id) {
 // SUMMARY
 // ═══════════════════════════════════════════
 function renderSummary() {
-  document.getElementById('sumInc').textContent = fmtS(bankBalance());
-  document.getElementById('sumSpent').textContent = fmtS(totalSpent());
-  document.getElementById('sumAssigned').textContent = fmtS(totalAssigned());
-  document.getElementById('sumAvail').textContent = fmtS(totalAvailable());
+  document.getElementById('sumInc').textContent = fmt(bankBalance());
+  document.getElementById('sumSpent').textContent = fmt(totalSpent());
+  document.getElementById('sumAssigned').textContent = fmt(totalAssigned());
+  document.getElementById('sumAvail').textContent = fmt(totalAvailable());
   var el = document.getElementById('sumList');
   var html = '';
   sortedGroups().forEach(function(g) {
