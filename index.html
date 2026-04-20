@@ -757,7 +757,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 <div class="overlay" id="expModal">
   <div class="sheet">
     <div class="drag"></div>
-    <div class="sheet-title">Log Expense</div>
+    <div class="sheet-title" id="expModalTitle">Log Expense</div>
     <div class="field"><label>Description</label><input id="expDesc" placeholder="What was this for?"></div>
     <div class="field"><label>Amount ($)</label><input id="expAmt" type="number" inputmode="decimal" placeholder="0.00"></div>
     <div class="field"><label>Envelope</label><select id="expCat"></select></div>
@@ -772,6 +772,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     </div>
     <button class="btn-p" id="saveExpBtn">Log Expense</button>
     <button class="btn-s" id="cancelExpBtn">Cancel</button>
+    <button class="btn-d" id="deleteExpBtn" style="display:none">Delete Expense</button>
   </div>
 </div>
 
@@ -1920,6 +1921,10 @@ function openIncomeModal() {
 }
 
 function openExpModal() {
+  editingExpId = null;
+  if (document.getElementById('expModalTitle')) document.getElementById('expModalTitle').textContent = 'Log Expense';
+  if (document.getElementById('saveExpBtn')) document.getElementById('saveExpBtn').textContent = 'Log Expense';
+  if (document.getElementById('deleteExpBtn')) document.getElementById('deleteExpBtn').style.display = 'none';
   creditOn = false;
   document.getElementById('creditTog').className = 'tog';
   document.getElementById('expDesc').value = '';
@@ -2040,7 +2045,7 @@ function saveIncome() {
 
 function saveExp() {
   var desc = document.getElementById('expDesc').value.trim() || 'Expense';
-  var amt = parseFloat(document.getElementById('expAmt').value);
+  var amt = Math.round((parseFloat(document.getElementById('expAmt').value)||0) * 100) / 100;
   var envId = document.getElementById('expCat').value;
   var date = document.getElementById('expDate').value;
   var isCredit = creditOn;
@@ -2048,6 +2053,20 @@ function saveExp() {
   if (!amt || amt <= 0) { toast('Enter a valid amount'); return; }
   if (!date) { toast('Pick a date'); return; }
   if (!envId) { toast('Pick an envelope'); return; }
+
+  if (editingExpId) {
+    // Edit existing expense
+    var exp = S.expenses.find(function(e){return e.id===editingExpId;});
+    if (exp) { exp.desc=desc; exp.amount=amt; exp.envId=envId; exp.date=date; exp.isCredit=isCredit; exp.ccId=ccId||null; }
+    editingExpId = null;
+    saveS(); closeModal('expModal'); renderExpenses(); renderEnvelopes(); renderSummary(); updateRTA();
+    toast('✓ Expense updated!');
+    document.getElementById('expModalTitle').textContent = 'Log Expense';
+    document.getElementById('saveExpBtn').textContent = 'Log Expense';
+    document.getElementById('deleteExpBtn').style.display = 'none';
+    return;
+  }
+
   // Check spending envelope balance
   var avail = envAvailable(envId);
   if (amt > avail + 0.005) {
@@ -2061,9 +2080,7 @@ function saveExp() {
   if (isCredit && ccId) {
     var card = S.creditCards.find(function(c){return c.id===ccId;});
     if (card) {
-      // Increase card balance
       card.balance = (card.balance||0) + amt;
-      // Move assigned funds: reduce spending env, increase CC payment env
       var spendEnv = S.envelopes.find(function(e){return e.id===envId;});
       var payEnv = S.envelopes.find(function(e){return e.id===card.paymentEnvId;});
       if (spendEnv && payEnv) {
@@ -2648,7 +2665,16 @@ window.onload = function() {
 
   // Expense modal
   document.getElementById('saveExpBtn').addEventListener('click', saveExp);
-  document.getElementById('cancelExpBtn').addEventListener('click', function(){closeModal('expModal');});
+  document.getElementById('cancelExpBtn').addEventListener('click', function(){
+    closeModal('expModal');
+    editingExpId = null;
+    if(document.getElementById('expModalTitle')) document.getElementById('expModalTitle').textContent = 'Log Expense';
+    if(document.getElementById('saveExpBtn')) document.getElementById('saveExpBtn').textContent = 'Log Expense';
+    if(document.getElementById('deleteExpBtn')) document.getElementById('deleteExpBtn').style.display = 'none';
+  });
+  document.getElementById('deleteExpBtn').addEventListener('click', function(){
+    if(editingExpId){ delExp(editingExpId); closeModal('expModal'); editingExpId=null; }
+  });
   document.getElementById('expModal').addEventListener('click', function(e){modalBg(e,'expModal');});
   document.getElementById('creditTog').addEventListener('click', function(){
     creditOn = !creditOn;
