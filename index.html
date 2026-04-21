@@ -762,6 +762,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="field"><label>Amount ($)</label><input id="expAmt" type="number" inputmode="decimal" placeholder="0.00"></div>
     <div class="field"><label>Envelope</label><select id="expCat"></select></div>
     <div class="field"><label>Date</label><input id="expDate" type="date"></div>
+    <div class="field"><label>Time (optional)</label><input id="expTime" type="time"></div>
     <div class="tog-row">
       <div><div class="tog-lbl">Credit Card Purchase</div><div class="tog-sub">Money moves from spending envelope → payment envelope</div></div>
       <div class="tog" id="creditTog"></div>
@@ -1678,11 +1679,17 @@ function renderExpenses() {
   var el = document.getElementById('expList');
   if (!cnt) { el.innerHTML = '<div class="empty"><div class="ei">📝</div><p>No expenses yet.</p></div>'; return; }
   el.innerHTML = '';
-  var sorted = S.expenses.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  var sorted = S.expenses.slice().sort(function(a,b){
+    var da = a.datetime ? new Date(a.datetime) : new Date(a.date+'T00:00');
+    var db = b.datetime ? new Date(b.datetime) : new Date(b.date+'T00:00');
+    return db - da;
+  });
   sorted.forEach(function(e) {
     var env = S.envelopes.find(function(v){return v.id===e.envId;});
     var clr = env ? env.color+'55' : 'var(--surf2)';
-    var dt = new Date(e.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    var dtObj = e.datetime ? new Date(e.datetime) : new Date(e.date+'T12:00:00');
+    var dt = dtObj.toLocaleDateString('en-US',{month:'short',day:'numeric'}) +
+      (e.time ? ' ' + dtObj.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}) : '');
     var tags = (e.isCredit ? '<span class="tag credit">CREDIT</span>' : '') + (e.isReimb ? '<span class="tag reimb">REIMB</span>' : '');
     var div = document.createElement('div');
     div.className = 'exp-item';
@@ -1718,6 +1725,7 @@ function openEditExpModal(id) {
   document.getElementById('expDesc').value = exp.desc||'';
   document.getElementById('expAmt').value = exp.amount;
   document.getElementById('expDate').value = exp.date;
+  document.getElementById('expTime').value = exp.time || '00:00';
   var sel = document.getElementById('expCat');
   var opts = '';
   sortedGroups().forEach(function(g){
@@ -1969,6 +1977,7 @@ function openExpModal() {
   document.getElementById('expDesc').value = '';
   document.getElementById('expAmt').value = '';
   document.getElementById('expDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('expTime').value = new Date().toTimeString().slice(0,5);
   var sel = document.getElementById('expCat');
   var opts = '';
   sortedGroups().forEach(function(g){
@@ -2087,6 +2096,8 @@ function saveExp() {
   var amt = Math.round((parseFloat(document.getElementById('expAmt').value)||0) * 100) / 100;
   var envId = document.getElementById('expCat').value;
   var date = document.getElementById('expDate').value;
+  var time = document.getElementById('expTime').value || '00:00';
+  var datetime = date + 'T' + time;
   var isCredit = creditOn;
   var ccId = isCredit ? document.getElementById('expCCSelect').value : null;
   if (!amt || amt <= 0) { toast('Enter a valid amount'); return; }
@@ -2096,7 +2107,7 @@ function saveExp() {
   if (editingExpId) {
     // Edit existing expense
     var exp = S.expenses.find(function(e){return e.id===editingExpId;});
-    if (exp) { exp.desc=desc; exp.amount=amt; exp.envId=envId; exp.date=date; exp.isCredit=isCredit; exp.ccId=ccId||null; }
+    if (exp) { exp.desc=desc; exp.amount=amt; exp.envId=envId; exp.date=date; exp.time=time; exp.datetime=datetime; exp.isCredit=isCredit; exp.ccId=ccId||null; }
     editingExpId = null;
     saveS(); closeModal('expModal'); renderExpenses(); renderEnvelopes(); renderSummary(); updateRTA();
     toast('✓ Expense updated!');
@@ -2114,7 +2125,7 @@ function saveExp() {
     if (!proceed) return;
   }
   // Log the expense
-  S.expenses.push({id:uid(), desc:desc, amount:amt, envId:envId, date:date, isCredit:isCredit, ccId:ccId||null});
+  S.expenses.push({id:uid(), desc:desc, amount:amt, envId:envId, date:date, time:time, datetime:datetime, isCredit:isCredit, ccId:ccId||null});
   // YNAB magic: credit purchase moves money from spending envelope → CC payment envelope
   if (isCredit && ccId) {
     var card = S.creditCards.find(function(c){return c.id===ccId;});
