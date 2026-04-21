@@ -1379,6 +1379,7 @@ function renderEnvCard(env) {
       '<div class="env-assign-row">' +
         '<input class="env-input" id="assignInput_'+eid+'" type="number" inputmode="decimal" placeholder="'+(S.viewingNextMonth?'Next month amount...':'Assign amount...')+'" value="'+(S.viewingNextMonth?((env.assignedNext||0).toFixed(2)):assigned.toFixed(2))+'">' +
         '<button class="env-set-btn" data-eid="'+eid+'" onclick="setAssigned(this.dataset.eid)">Set</button>' +
+        '<button class="env-set-btn" data-eid="'+eid+'" onclick="setAssignedDirect(this.dataset.eid,0)" style="background:var(--surf3);color:var(--text3);margin-left:4px">Clear</button>' +
       '</div>' +
       '<div class="env-actions">' +
         '<button class="env-act-btn" data-eid="'+eid+'" onclick="openEnvModal(this.dataset.eid,null)">&#9999;&#65039; Edit</button>' +
@@ -1400,6 +1401,17 @@ function toggleEnv(id) {
   if (body) body.className = body.className === 'env-body' ? 'env-body open' : 'env-body';
 }
 
+function setAssignedDirect(envId, val) {
+  val = Math.round(val * 100) / 100;
+  var env = S.envelopes.find(function(e){return e.id===envId;});
+  if (!env) return;
+  var diff = val - (env.assigned || 0);
+  var rta = readyToAssign();
+  if (diff > rta + 0.005) { toast('⚠️ Only '+fmt(rta)+' left to assign!'); return; }
+  env.assigned = val;
+  saveS(); renderEnvelopes(); updateRTA(); renderUnderfunded();
+  toast('✓ '+env.name+' cleared');
+}
 function setAssigned(envId) {
   var input = document.getElementById('assignInput_'+envId);
   var val = Math.round((parseFloat(input.value) || 0) * 100) / 100;
