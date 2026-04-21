@@ -2884,6 +2884,16 @@ function initSwipe() {
   }, {passive:true});
 }
 
+var cashIncOn = false;
+var reimbOn = false;
+var creditOn = false;
+var dialOpen = false;
+var editingExpId = null;
+var editingIncomeId = null;
+var ufCollapsed = false;
+var swTouchX = 0, swTouchY = 0, swTouchT = 0;
+var currentView = 'budget';
+
 window.onload = function() {
   loadS();
 
@@ -2914,6 +2924,10 @@ window.onload = function() {
   document.getElementById('saveIncBtn').addEventListener('click', saveIncome);
   document.getElementById('cancelIncBtn').addEventListener('click', function(){closeModal('incomeModal');});
   document.getElementById('incomeModal').addEventListener('click', function(e){modalBg(e,'incomeModal');});
+  document.getElementById('cashIncTog').addEventListener('click', function(){
+    cashIncOn = !cashIncOn;
+    this.className = 'tog' + (cashIncOn?' on':'');
+  });
   document.getElementById('reimbTog').addEventListener('click', function(){
     reimbOn = !reimbOn;
     this.className = 'tog' + (reimbOn?' on':'');
@@ -2935,21 +2949,32 @@ window.onload = function() {
     if(editingExpId){ delExp(editingExpId); closeModal('expModal'); editingExpId=null; }
   });
   document.getElementById('expModal').addEventListener('click', function(e){modalBg(e,'expModal');});
-  document.getElementById('creditTog').addEventListener('click', function(){
+  // Wire payMethod dropdown to show/hide CC selector
+  document.getElementById('payMethod').addEventListener('change', function(){
+    var isCredit = this.value === 'credit';
+    creditOn = isCredit;
+    var ccField = document.getElementById('ccSelectField');
+    if (ccField) ccField.style.display = isCredit ? 'block' : 'none';
+    if (isCredit) {
+      var sel = document.getElementById('expCCSelect');
+      if (sel) {
+        if (!S.creditCards.length) {
+          sel.innerHTML = '<option value="">No cards added yet</option>';
+        } else {
+          sel.innerHTML = S.creditCards.map(function(c){
+            return '<option value="'+c.id+'">'+esc(c.name)+(c.lastFour?' (•••• '+c.lastFour+')':'')+'</option>';
+          }).join('');
+        }
+      }
+    }
+  });
+  // creditTog may not exist if replaced by payMethod dropdown
+  var ctog = document.getElementById('creditTog');
+  if (ctog) ctog.addEventListener('click', function(){
     creditOn = !creditOn;
     this.className = 'tog' + (creditOn?' on':'');
     var ccField = document.getElementById('ccSelectField');
-    ccField.style.display = creditOn ? 'block' : 'none';
-    if (creditOn) {
-      var sel = document.getElementById('expCCSelect');
-      if (!S.creditCards.length) {
-        sel.innerHTML = '<option value="">No cards added yet — add one in Credit Cards tab</option>';
-      } else {
-        sel.innerHTML = S.creditCards.map(function(c){
-          return '<option value="'+c.id+'">'+esc(c.name)+(c.lastFour?' (•••• '+c.lastFour+')':'')+'</option>';
-        }).join('');
-      }
-    }
+    if (ccField) ccField.style.display = creditOn ? 'block' : 'none';
   });
 
   // Envelope modal
