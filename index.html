@@ -496,6 +496,11 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
   <!-- EXPENSES -->
   <div class="view" id="view-expenses">
+    <div class="field" style="margin-bottom:10px">
+      <select id="expFilter" style="width:100%;background:var(--surf);border:1px solid var(--border);border-radius:var(--rsm);padding:10px 13px;color:var(--text);font-size:14px;font-family:'Nunito',sans-serif;font-weight:700;outline:none;-webkit-appearance:none">
+        <option value="">All Envelopes</option>
+      </select>
+    </div>
     <div class="stat-row">
       <div class="stat"><div class="stat-val" id="expTot">$0</div><div class="stat-lbl">Spent</div></div>
       <div class="stat"><div class="stat-val" id="expCnt">0</div><div class="stat-lbl">Transactions</div></div>
@@ -1671,15 +1676,35 @@ function toggleSavingsFlag(envId) {
 // EXPENSES
 // ═══════════════════════════════════════════
 function renderExpenses() {
-  var total = totalSpent();
-  var cnt = S.expenses.length;
+  // Populate filter dropdown
+  var filterSel = document.getElementById('expFilter');
+  if (filterSel) {
+    var currentFilter = filterSel.value;
+    var opts = '<option value="">All Envelopes</option>';
+    sortedGroups().forEach(function(g){
+      opts += '<optgroup label="'+esc(g.name)+'">';
+      groupEnvelopes(g.id).forEach(function(e){ opts += '<option value="'+e.id+'">'+e.emoji+' '+e.name+'</option>'; });
+      opts += '</optgroup>';
+    });
+    filterSel.innerHTML = opts;
+    filterSel.value = currentFilter; // restore selection
+  }
+  var filterEnvId = filterSel ? filterSel.value : '';
+  var allExp = filterEnvId ? S.expenses.filter(function(e){return e.envId===filterEnvId;}) : S.expenses;
+  var total = 0; allExp.forEach(function(e){total+=e.amount;});
+  var cnt = allExp.length;
   document.getElementById('expTot').textContent = fmtS(total);
   document.getElementById('expCnt').textContent = cnt;
   document.getElementById('expAvg').textContent = cnt ? fmtS(total/cnt) : '$0';
   var el = document.getElementById('expList');
-  if (!cnt) { el.innerHTML = '<div class="empty"><div class="ei">📝</div><p>No expenses yet.</p></div>'; return; }
+  if (!cnt) {
+    el.innerHTML = filterEnvId
+      ? '<div class="empty"><div class="ei">📝</div><p>No expenses in this envelope.</p></div>'
+      : '<div class="empty"><div class="ei">📝</div><p>No expenses yet.</p></div>';
+    return;
+  }
   el.innerHTML = '';
-  var sorted = S.expenses.slice().sort(function(a,b){
+  var sorted = allExp.slice().sort(function(a,b){
     var da = a.datetime ? new Date(a.datetime) : new Date(a.date+'T00:00');
     var db = b.datetime ? new Date(b.datetime) : new Date(b.date+'T00:00');
     return db - da;
@@ -2723,6 +2748,7 @@ window.onload = function() {
 
   // Expense modal
   document.getElementById('saveExpBtn').addEventListener('click', saveExp);
+  document.getElementById('expFilter').addEventListener('change', renderExpenses);
   document.getElementById('cancelExpBtn').addEventListener('click', function(){
     closeModal('expModal');
     editingExpId = null;
