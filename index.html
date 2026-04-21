@@ -1307,6 +1307,8 @@ function openEditIncomeModal(id) {
   editingIncomeId = id;
   var inc = S.income.find(function(i){return i.id===id;});
   if (!inc) return;
+  cashIncOn = inc.isCash || false;
+  document.getElementById('cashIncTog').className = 'tog' + (cashIncOn?' on':'');
   reimbOn = inc.isReimb || false;
   document.getElementById('reimbTog').className = 'tog' + (reimbOn?' on':'');
   document.getElementById('reimbCatField').style.display = reimbOn ? 'block' : 'none';
@@ -2174,7 +2176,7 @@ function saveIncome() {
   if (editingIncomeId) {
     // Edit existing
     var inc = S.income.find(function(i){return i.id===editingIncomeId;});
-    if (inc) { inc.name=name; inc.amount=amt; inc.date=date; inc.isReimb=isReimb; inc.reimbEnvId=reimbEnvId; }
+    if (inc) { inc.name=name; inc.amount=amt; inc.date=date; inc.isCash=cashIncOn; inc.isReimb=isReimb; inc.reimbEnvId=reimbEnvId; }
     editingIncomeId = null;
     toast('✓ Updated!');
   } else {
