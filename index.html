@@ -2351,8 +2351,13 @@ function uploadToDrive(token) {
       toast('✅ Saved to Google Drive!');
       renderBackupBanner();
     } else {
-      toast('❌ Upload failed. Try again.');
-      console.error(xhr.responseText);
+      var errMsg = '❌ Error ' + xhr.status;
+      try {
+        var errData = JSON.parse(xhr.responseText);
+        if (errData.error && errData.error.message) errMsg += ': ' + errData.error.message;
+      } catch(e) {}
+      toast(errMsg);
+      alert('Drive upload failed:\nStatus: ' + xhr.status + '\n' + xhr.responseText.slice(0,200));
     }
   };
   xhr.onerror = function() {
