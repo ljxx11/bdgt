@@ -405,7 +405,8 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .tsb-right{text-align:right;flex-shrink:0}
 .tsb-numbers{font-size:13px;font-weight:800;color:var(--text)}
 .tsb-status{font-size:11px;font-weight:700;margin-top:2px}
-</style>
+.env-clear-btn{width:100%;padding:7px;text-align:center;font-size:12px;font-weight:800;color:var(--text3);background:var(--surf2);border-radius:var(--rsm);margin-top:6px;border:1px solid var(--border)}
+.env-clear-btn:active{opacity:.7}</style>
 </head>
 <body>
 <button id="expFab" onclick="openExpModal()" style="position:fixed;bottom:24px;right:16px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#e879f9,#a855f7);color:white;font-size:22px;border:none;cursor:pointer;z-index:9999;box-shadow:0 6px 20px rgba(168,85,247,0.5);display:flex;align-items:center;justify-content:center;font-family:sans-serif">📝</button>
@@ -1379,8 +1380,8 @@ function renderEnvCard(env) {
       '<div class="env-assign-row">' +
         '<input class="env-input" id="assignInput_'+eid+'" type="number" inputmode="decimal" placeholder="'+(S.viewingNextMonth?'Next month amount...':'Assign amount...')+'" value="'+(S.viewingNextMonth?((env.assignedNext||0).toFixed(2)):assigned.toFixed(2))+'">' +
         '<button class="env-set-btn" data-eid="'+eid+'" onclick="setAssigned(this.dataset.eid)">Set</button>' +
-        '<button class="env-set-btn" data-eid="'+eid+'" onclick="setAssignedDirect(this.dataset.eid,0)" style="background:var(--surf3);color:var(--text3);margin-left:4px">Clear</button>' +
       '</div>' +
+      '<button class="env-act-btn" style="width:100%;margin-top:6px" data-eid="'+eid+'" onclick="setAssignedDirect(this.dataset.eid,0)">Clear (set to $0)</button>' +
       '<div class="env-actions">' +
         '<button class="env-act-btn" data-eid="'+eid+'" onclick="openEnvModal(this.dataset.eid,null)">&#9999;&#65039; Edit</button>' +
         '<button class="env-act-btn" data-eid="'+eid+'" onclick="openTargetModal(this.dataset.eid)">&#127919; Target</button>' +
