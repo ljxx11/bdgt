@@ -7,6 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#2d1b3d">
 <title>Piggy Bank</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="icon" type="image/png" href="./icon-192.png">
@@ -406,7 +407,12 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .tsb-numbers{font-size:13px;font-weight:800;color:var(--text)}
 .tsb-status{font-size:11px;font-weight:700;margin-top:2px}
 .env-clear-btn{width:100%;padding:7px;text-align:center;font-size:12px;font-weight:800;color:var(--text3);background:var(--surf2);border-radius:var(--rsm);margin-top:6px;border:1px solid var(--border)}
-.env-clear-btn:active{opacity:.7}</style>
+.env-clear-btn:active{opacity:.7}
+/* ── BACKUP REMINDER ── */
+.backup-reminder{background:var(--blue-dim);border:1px solid rgba(96,165,250,.25);border-radius:var(--rsm);padding:9px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.backup-reminder span{font-size:12px;font-weight:700;color:var(--blue)}
+.backup-reminder-btn{background:var(--blue);color:#fff;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:800;white-space:nowrap;flex-shrink:0}
+</style>
 </head>
 <body>
 <button id="expFab" onclick="openExpModal()" style="position:fixed;bottom:24px;right:16px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#e879f9,#a855f7);color:white;font-size:22px;border:none;cursor:pointer;z-index:9999;box-shadow:0 6px 20px rgba(168,85,247,0.5);display:flex;align-items:center;justify-content:center;font-family:sans-serif">📝</button>
@@ -461,6 +467,10 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
   <div class="view on" id="view-budget">
     <div class="warn" id="warnBanner"><span>⚠️ You've assigned more than your bank balance!</span></div>
     <div class="week-banner" id="weekBanner">📅 Weekly mode — showing per-paycheck amounts</div>
+    <div class="backup-reminder" id="backupReminder" style="display:none">
+      <span id="backupReminderText">💾 Back up your data</span>
+      <button class="backup-reminder-btn" id="backupReminderBtn">Back Up Now</button>
+    </div>
     <div class="next-month-banner" id="nextMonthBanner">✨ Next Month View — assigning money for next month</div>
     <div class="target-summary-bar" id="targetSummaryBar" style="display:none">
       <div class="tsb-left">
@@ -671,7 +681,11 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="card">
       <div class="card-body">
         <div class="set-row">
-          <div><div class="set-lbl">💾 Save Backup</div><div class="set-sub">Downloads a backup file to your phone. Then open Google Drive and upload it to keep it safe.</div></div>
+          <div><div class="set-lbl">☁️ Save to Google Drive</div><div class="set-sub">Backs up directly to your Google Drive — no manual steps.</div></div>
+          <button class="sh-btn" id="driveBackupBtn" style="background:var(--green-dim);color:var(--green)">Drive</button>
+        </div>
+        <div class="set-row">
+          <div><div class="set-lbl">💾 Save to Phone</div><div class="set-sub">Downloads a backup file. Then upload to Google Drive manually.</div></div>
           <button class="sh-btn" id="exportBtn">Save</button>
         </div>
         <div class="set-row">
@@ -860,6 +874,7 @@ var S = {
   debts: [],
   weeklyMode: false,
   darkMode: true,
+  lastBackupDate: null,
   incomeCollapsed: false,
   currentMonth: '',  // tracks month for savings carry-forward
   viewingNextMonth: false  // toggle for next month budgeting
@@ -906,6 +921,7 @@ function loadS() {
     if(!e.isSavings) e.carryForward=0;
   });
   if(S.viewingNextMonth===undefined) S.viewingNextMonth=false;
+  if(!S.lastBackupDate) S.lastBackupDate=null;
   // Carry forward savings if new month
   checkMonthRollover();
 }
@@ -2281,13 +2297,81 @@ function toggleDark() {
   saveS(); applyTheme();
 }
 
+// ── GOOGLE DRIVE BACKUP ──
+var GDRIVE_CLIENT_ID = '906813663899-4869fffcqp64lc25ij3lgorn38dsdebn.apps.googleusercontent.com';
+var GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+var gdriveToken = null;
+
+function saveToGoogleDrive() {
+  var btn = document.getElementById('driveBackupBtn');
+  if (btn) { btn.textContent = 'Signing in...'; btn.disabled = true; }
+
+  var client = google.accounts.oauth2.initTokenClient({
+    client_id: GDRIVE_CLIENT_ID,
+    scope: GDRIVE_SCOPE,
+    callback: function(response) {
+      if (response.error) {
+        toast('❌ Sign-in failed: ' + response.error);
+        if (btn) { btn.textContent = 'Drive'; btn.disabled = false; }
+        return;
+      }
+      gdriveToken = response.access_token;
+      uploadToDrive(gdriveToken);
+    }
+  });
+  client.requestAccessToken();
+}
+
+function uploadToDrive(token) {
+  var btn = document.getElementById('driveBackupBtn');
+  if (btn) btn.textContent = 'Uploading...';
+
+  var filename = 'PiggyBank-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  var content = JSON.stringify(S, null, 2);
+  var boundary = 'piggybank_boundary';
+  var metadata = JSON.stringify({name: filename, mimeType: 'application/json'});
+
+  var body = '--' + boundary + '\r\n' +
+    'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+    metadata + '\r\n' +
+    '--' + boundary + '\r\n' +
+    'Content-Type: application/json\r\n\r\n' +
+    content + '\r\n' +
+    '--' + boundary + '--';
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
+  xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+  xhr.setRequestHeader('Content-Type', 'multipart/related; boundary=' + boundary);
+  xhr.onload = function() {
+    if (btn) { btn.textContent = 'Drive'; btn.disabled = false; }
+    if (xhr.status === 200) {
+      S.lastBackupDate = new Date().toISOString().slice(0,10);
+      saveS();
+      toast('✅ Saved to Google Drive!');
+      renderBackupBanner();
+    } else {
+      toast('❌ Upload failed. Try again.');
+      console.error(xhr.responseText);
+    }
+  };
+  xhr.onerror = function() {
+    if (btn) { btn.textContent = 'Drive'; btn.disabled = false; }
+    toast('❌ Network error. Try again.');
+  };
+  xhr.send(body);
+}
+
 function exportData() {
   var blob = new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'PiggyBank-backup-' + new Date().toISOString().slice(0,10) + '.json';
   a.click();
+  S.lastBackupDate = new Date().toISOString().slice(0,10);
+  saveS();
   toast('📦 Exported!');
+  renderBackupBanner();
 }
 
 function importData(e) {
@@ -2699,10 +2783,30 @@ function renderRolloverSummary() {
   if (banner) banner.className = 'next-month-banner' + (S.viewingNextMonth ? ' show' : '');
 }
 
+function renderBackupBanner() {
+  var banner = document.getElementById('backupReminder');
+  var text = document.getElementById('backupReminderText');
+  if (!banner) return;
+  var lastBackup = S.lastBackupDate;
+  if (!lastBackup) {
+    // Never backed up
+    banner.style.display = 'flex';
+    if (text) text.textContent = '💾 You have never backed up your data!';
+    return;
+  }
+  var days = Math.floor((new Date() - new Date(lastBackup + 'T12:00:00')) / 86400000);
+  if (days >= 7) {
+    banner.style.display = 'flex';
+    if (text) text.textContent = '💾 Last backup was ' + days + ' days ago';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
 function renderAll() {
   renderIncome(); renderEnvelopes(); renderExpenses(); renderSummary();
   renderOwed(); renderGoals(); renderDebts(); renderHistory(); renderCCTab();
-  renderUnderfunded(); renderScheduled(); renderRolloverSummary(); renderTargetSummary();
+  renderUnderfunded(); renderScheduled(); renderRolloverSummary(); renderTargetSummary(); renderBackupBanner();
   updateRTA(); applyTheme();
   document.getElementById('weekTog').className = 'tog' + (S.weeklyMode?' on':'');
   document.getElementById('darkTog').className = 'tog' + (S.darkMode?' on':'');
@@ -2864,6 +2968,12 @@ window.onload = function() {
   document.getElementById('manualRolloverBtn').addEventListener('click', manualRollover);
   document.getElementById('weekTog').addEventListener('click', toggleWeekMode);
   document.getElementById('darkTog').addEventListener('click', toggleDark);
+  document.getElementById('driveBackupBtn').addEventListener('click', saveToGoogleDrive);
+  document.getElementById('backupReminderBtn').addEventListener('click', function(){
+    // Go to settings and trigger drive backup
+    go('settings');
+    saveToGoogleDrive();
+  });
   document.getElementById('exportBtn').addEventListener('click', exportData);
   document.getElementById('importBtn').addEventListener('click', function(){document.getElementById('importFile').click();});
   document.getElementById('importFile').addEventListener('change', importData);
