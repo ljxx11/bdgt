@@ -1406,7 +1406,6 @@ function setAssigned(envId) {
   var env = S.envelopes.find(function(e){return e.id===envId;});
   if (!env) return;
   if (S.viewingNextMonth) {
-    // Write to next month
     var diff = val - (env.assignedNext||0);
     var rtaNext = readyToAssignNext();
     if (diff > rtaNext + 0.005) {
@@ -1418,6 +1417,8 @@ function setAssigned(envId) {
   } else {
     var diff = val - (env.assigned || 0);
     var rta = readyToAssign();
+    // Only block if INCREASING assignment beyond available RTA
+    // Always allow reductions (diff < 0) or no change
     if (diff > rta + 0.005) {
       toast('⚠️ Only '+fmt(rta)+' left to assign!'); return;
     }
