@@ -759,6 +759,10 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="field"><label>Source Name</label><input id="incName" placeholder="e.g. Paycheck, Side Hustle"></div>
     <div class="field"><label>Amount ($)</label><input id="incAmt" type="number" inputmode="decimal" placeholder="0.00"></div>
     <div class="field"><label>Date</label><input id="incDate" type="date"></div>
+    <div class="tog-row">
+      <div><div class="tog-lbl">💵 Cash Income</div><div class="tog-sub">This money is cash, not deposited to bank</div></div>
+      <div class="tog" id="cashIncTog"></div>
+    </div>
     <div class="tog-row" id="reimbRow">
       <div><div class="tog-lbl">Reimbursement</div><div class="tog-sub">Routes back to original envelope, not new money</div></div>
       <div class="tog" id="reimbTog"></div>
@@ -783,9 +787,19 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="field"><label>Envelope</label><select id="expCat"></select></div>
     <div class="field"><label>Date</label><input id="expDate" type="date"></div>
     <div class="field"><label>Time (optional)</label><input id="expTime" type="time"></div>
-    <div class="tog-row">
-      <div><div class="tog-lbl">Credit Card Purchase</div><div class="tog-sub">Money moves from spending envelope → payment envelope</div></div>
-      <div class="tog" id="creditTog"></div>
+    <div class="field">
+      <label>Payment Method</label>
+      <select id="payMethod" style="-webkit-appearance:none">
+        <option value="debit">🏦 Debit / Bank</option>
+        <option value="cash">💵 Cash</option>
+        <option value="credit">💳 Credit Card</option>
+      </select>
+    </div>
+    <div id="ccSelectFieldWrap">
+      <div class="tog-row" style="display:none" id="creditTogRow">
+        <div><div class="tog-lbl">Credit Card</div><div class="tog-sub">Money moves from spending envelope → payment envelope</div></div>
+        <div class="tog" id="creditTog"></div>
+      </div>
     </div>
     <div class="field" id="ccSelectField" style="display:none">
       <label>Which Card?</label>
@@ -875,6 +889,7 @@ var S = {
   weeklyMode: false,
   darkMode: true,
   lastBackupDate: null,
+  cashBalance: 0,
   incomeCollapsed: false,
   currentMonth: '',  // tracks month for savings carry-forward
   viewingNextMonth: false  // toggle for next month budgeting
@@ -922,6 +937,7 @@ function loadS() {
   });
   if(S.viewingNextMonth===undefined) S.viewingNextMonth=false;
   if(!S.lastBackupDate) S.lastBackupDate=null;
+  if(S.cashBalance===undefined) S.cashBalance=0;
   // Carry forward savings if new month
   checkMonthRollover();
 }
@@ -1017,7 +1033,15 @@ function fmtS(n) {
 // ═══════════════════════════════════════════
 function bankBalance() {
   var total = 0;
-  S.income.forEach(function(i) { total += i.amount; });
+  S.income.forEach(function(i) { if (!i.isCash) total += i.amount; });
+  return Math.round(total * 100) / 100;
+}
+function cashBalance() {
+  // Start with stored cash balance + cash income
+  var total = S.cashBalance || 0;
+  S.income.forEach(function(i) { if (i.isCash) total += i.amount; });
+  // Subtract cash expenses
+  S.expenses.forEach(function(e) { if (e.payMethod === 'cash') total -= e.amount; });
   return Math.round(total * 100) / 100;
 }
 function totalAssigned() {
@@ -1190,6 +1214,11 @@ function updateRTA() {
   document.getElementById('rtaAssigned').textContent = S.viewingNextMonth
     ? 'Next: ' + fmt(assignedNext)
     : 'Assigned: ' + fmt(totalAssigned());
+  var cash = cashBalance();
+  var cashEl = document.getElementById('rtaCash');
+  var totalEl = document.getElementById('rtaTotal');
+  if (cashEl) cashEl.textContent = '💵 Cash: ' + fmt(cash);
+  if (totalEl) totalEl.textContent = 'Total: ' + fmt(bank + cash);
   var age = moneyAge();
   var ageEl = document.getElementById('moneyAge');
   if (ageEl) {
@@ -1748,7 +1777,8 @@ function renderExpenses() {
     var dtObj = e.datetime ? new Date(e.datetime) : new Date(e.date+'T12:00:00');
     var dt = dtObj.toLocaleDateString('en-US',{month:'short',day:'numeric'}) +
       (e.time ? ' ' + dtObj.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}) : '');
-    var tags = (e.isCredit ? '<span class="tag credit">CREDIT</span>' : '') + (e.isReimb ? '<span class="tag reimb">REIMB</span>' : '');
+    var pmLabel = e.payMethod === 'cash' ? '💵' : e.payMethod === 'credit' ? '💳' : '🏦';
+    var tags = pmLabel + ' ' + (e.isCredit ? '<span class="tag credit">CREDIT</span>' : '') + (e.isReimb ? '<span class="tag reimb">REIMB</span>' : '');
     var div = document.createElement('div');
     div.className = 'exp-item';
     div.innerHTML =
@@ -2002,6 +2032,8 @@ function openIncomeModal() {
   document.getElementById('incomeModalTitle').textContent = 'Add Income';
   document.getElementById('saveIncBtn').textContent = 'Add Income';
   document.getElementById('deleteIncBtn').style.display = 'none';
+  cashIncOn = false;
+  document.getElementById('cashIncTog').className = 'tog';
   reimbOn = false;
   document.getElementById('reimbTog').className = 'tog';
   document.getElementById('reimbCatField').style.display = 'none';
@@ -2032,6 +2064,8 @@ function openExpModal() {
   var db=document.getElementById('deleteExpBtn'); if(db) db.style.display='none';
   creditOn = false;
   document.getElementById('creditTog').className = 'tog';
+  var pm = document.getElementById('payMethod');
+  if (pm) pm.value = 'debit';
   document.getElementById('expDesc').value = '';
   document.getElementById('expAmt').value = '';
   document.getElementById('expDate').value = new Date().toISOString().slice(0,10);
@@ -2167,7 +2201,9 @@ function saveExp() {
   var date = document.getElementById('expDate').value;
   var time = document.getElementById('expTime').value || '00:00';
   var datetime = date + 'T' + time;
-  var isCredit = creditOn;
+  var pm = document.getElementById('payMethod');
+  var payMethod = pm ? pm.value : 'debit';
+  var isCredit = payMethod === 'credit';
   var ccId = isCredit ? document.getElementById('expCCSelect').value : null;
   if (!amt || amt <= 0) { toast('Enter a valid amount'); return; }
   if (!date) { toast('Pick a date'); return; }
@@ -2194,7 +2230,7 @@ function saveExp() {
     if (!proceed) return;
   }
   // Log the expense
-  S.expenses.push({id:uid(), desc:desc, amount:amt, envId:envId, date:date, time:time, datetime:datetime, isCredit:isCredit, ccId:ccId||null});
+  S.expenses.push({id:uid(), desc:desc, amount:amt, envId:envId, date:date, time:time, datetime:datetime, payMethod:payMethod, isCredit:isCredit, ccId:ccId||null});
   // YNAB magic: credit purchase moves money from spending envelope → CC payment envelope
   if (isCredit && ccId) {
     var card = S.creditCards.find(function(c){return c.id===ccId;});
@@ -2982,6 +3018,12 @@ window.onload = function() {
   document.getElementById('exportBtn').addEventListener('click', exportData);
   document.getElementById('importBtn').addEventListener('click', function(){document.getElementById('importFile').click();});
   document.getElementById('importFile').addEventListener('change', importData);
+  document.getElementById('setCashBtn').addEventListener('click', function() {
+    var amt = parseFloat(prompt('Enter your current cash balance:'));
+    if (isNaN(amt) || amt < 0) { toast('Invalid amount'); return; }
+    S.cashBalance = Math.round(amt * 100) / 100;
+    saveS(); updateRTA(); toast('💵 Cash balance set to ' + fmt(S.cashBalance));
+  });
   document.getElementById('resetMonthBtn').addEventListener('click', resetMonth);
   document.getElementById('clearBtn').addEventListener('click', clearAll);
 
