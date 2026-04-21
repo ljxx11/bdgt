@@ -796,6 +796,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     </div>
     <button class="btn-p" id="saveEnvBtn">Save Envelope</button>
     <button class="btn-s" id="cancelEnvBtn">Cancel</button>
+    <button class="btn-s" id="clearEnvAssignBtn" style="display:none;color:var(--red)">🗑️ Clear Assignment (set to $0)</button>
     <button class="btn-d" id="deleteEnvBtn" style="display:none">Delete Envelope</button>
   </div>
 </div>
@@ -1378,7 +1379,7 @@ function renderEnvCard(env) {
         '<div class="env-num"><div class="env-num-val'+(avail<0?' style=\"color:var(--red)\"':'')+'>'+(avail<0?'-':'')+fmt(Math.abs(avail))+'</div><div class="env-num-lbl">Available</div></div>' +
       '</div>' +
       '<div class="env-assign-row">' +
-        '<input class="env-input" id="assignInput_'+eid+'" type="number" inputmode="decimal" placeholder="'+(S.viewingNextMonth?'Next month amount...':'Assign amount...')+'" value="'+(S.viewingNextMonth?((env.assignedNext||0).toFixed(2)):assigned.toFixed(2))+'">' +
+        '<input class="env-input" id="assignInput_'+eid+'" type="number" inputmode="decimal" placeholder="'+(S.viewingNextMonth?'Next month amount...':'Assign amount...')+'" value="'+(S.viewingNextMonth?((env.assignedNext||0).toFixed(2)):assigned.toFixed(2))+'" oninput="window._lastAssignVal=this.value" onchange="window._lastAssignVal=this.value">' +
         '<button class="env-set-btn" data-eid="'+eid+'" onclick="setAssigned(this.dataset.eid)">Set</button>' +
       '</div>' +
       '<button class="env-act-btn" style="width:100%;margin-top:6px" data-eid="'+eid+'" onclick="setAssignedDirect(this.dataset.eid,0)">Clear (set to $0)</button>' +
@@ -1415,7 +1416,9 @@ function setAssignedDirect(envId, val) {
 }
 function setAssigned(envId) {
   var input = document.getElementById('assignInput_'+envId);
-  var val = Math.round((parseFloat(input.value) || 0) * 100) / 100;
+  // Fallback: use stored value if input was re-rendered
+  var raw = input ? input.value : (window._lastAssignVal || '0');
+  var val = Math.round((parseFloat(raw) || 0) * 100) / 100;
   var env = S.envelopes.find(function(e){return e.id===envId;});
   if (!env) return;
   if (S.viewingNextMonth) {
@@ -2029,6 +2032,15 @@ function openExpModal() {
   setTimeout(function(){document.getElementById('expAmt').focus();},300);
 }
 
+// Global clear function - can be called directly
+function clearEnvelope(envId) {
+  var env = S.envelopes.find(function(e){return e.id===envId;});
+  if (!env) return;
+  env.assigned = 0;
+  saveS(); renderEnvelopes(); updateRTA(); renderUnderfunded();
+  toast('✓ '+env.name+' cleared to $0');
+}
+
 var newEnvGroupId = null;
 function openEnvModal(id, groupId) {
   editingEnvId = id || null;
@@ -2038,6 +2050,8 @@ function openEnvModal(id, groupId) {
   document.getElementById('envName').value = env ? env.name : '';
   document.getElementById('envEmoji').value = env ? env.emoji : '';
   document.getElementById('deleteEnvBtn').style.display = env ? 'block' : 'none';
+  var clearBtn = document.getElementById('clearEnvAssignBtn');
+  if (clearBtn) clearBtn.style.display = env ? 'block' : 'none';
   // Group selector
   var gs = document.getElementById('envGroupSelect');
   gs.innerHTML = S.groups.map(function(g){
@@ -2793,6 +2807,9 @@ window.onload = function() {
 
   // Envelope modal
   document.getElementById('saveEnvBtn').addEventListener('click', saveEnv);
+  document.getElementById('clearEnvAssignBtn').addEventListener('click', function(){
+    if(editingEnvId){ clearEnvelope(editingEnvId); closeModal('envModal'); }
+  });
   document.getElementById('cancelEnvBtn').addEventListener('click', function(){closeModal('envModal');});
   document.getElementById('deleteEnvBtn').addEventListener('click', deleteEnv);
   document.getElementById('envModal').addEventListener('click', function(e){modalBg(e,'envModal');});
