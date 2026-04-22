@@ -898,10 +898,18 @@ var S = {
 var COLORS = ['#e879f9','#a855f7','#60a5fa','#4ade80','#fbbf24','#f87171','#34d399','#fb923c','#f472b6','#818cf8'];
 var editingEnvId = null;
 var editingGroupId = null;
+var editingIncomeId = null;
+var editingExpId = null;
 var owedType = 'toMe';
 var currentView = 'budget';
 var dragSrc = null;
 var dragType = null; // 'group' or 'env'
+var cashIncOn = false;
+var reimbOn = false;
+var creditOn = false;
+var dialOpen = false;
+var ufCollapsed = false;
+var swTouchX = 0, swTouchY = 0, swTouchT = 0;
 
 function saveS() { localStorage.setItem('piggybank_v2', JSON.stringify(S)); }
 function loadS() {
@@ -1302,7 +1310,7 @@ function delIncome(id) {
   saveS(); renderIncome(); renderEnvelopes(); renderSummary(); toast('Income removed');
 }
 
-var editingIncomeId = null;
+
 function openEditIncomeModal(id) {
   editingIncomeId = id;
   var inc = S.income.find(function(i){return i.id===id;});
@@ -1803,7 +1811,7 @@ function delExp(id) {
   S.expenses = S.expenses.filter(function(e){return e.id!==id;});
   saveS(); renderExpenses(); renderEnvelopes(); renderSummary(); toast('Expense removed');
 }
-var editingExpId = null;
+
 function openEditExpModal(id) {
   editingExpId = id;
   var exp = S.expenses.find(function(e){return e.id===id;});
@@ -2512,7 +2520,7 @@ function renderTargetSummary() {
   }
 }
 
-var ufCollapsed = false;
+
 function toggleUnderfunded() {
   ufCollapsed = !ufCollapsed;
   var list = document.getElementById('underfundedList');
@@ -2884,15 +2892,15 @@ function initSwipe() {
   }, {passive:true});
 }
 
-var cashIncOn = false;
-var reimbOn = false;
-var creditOn = false;
-var dialOpen = false;
-var editingExpId = null;
-var editingIncomeId = null;
-var ufCollapsed = false;
+
+
+
+
+
+
+
 var swTouchX = 0, swTouchY = 0, swTouchT = 0;
-var currentView = 'budget';
+
 
 window.onload = function() {
   loadS();
