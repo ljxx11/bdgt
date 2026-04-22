@@ -694,6 +694,10 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
           <input type="file" id="importFile" accept=".json" style="display:none">
         </div>
         <div class="set-row">
+          <div><div class="set-lbl">💵 Set Cash Balance</div><div class="set-sub">Enter how much physical cash you currently have on hand.</div></div>
+          <button class="sh-btn" id="setCashBtn">Set</button>
+        </div>
+        <div class="set-row">
           <div><div class="set-lbl">Reset Month</div><div class="set-sub">Clear expenses, keep envelopes & assignments</div></div>
           <button class="sh-btn" style="background:var(--red-dim);color:var(--red)" id="resetMonthBtn">Reset</button>
         </div>
@@ -2922,16 +2926,6 @@ var swTouchX = 0, swTouchY = 0, swTouchT = 0;
 window.onload = function() {
   loadS();
 
-  // Debug: show what was loaded
-  setTimeout(function() {
-    var raw = localStorage.getItem('piggybank_v2');
-    if (!raw) {
-      toast('⚠️ DEBUG: No data in localStorage!');
-    } else {
-      toast('✅ DEBUG: Loaded ' + S.groups.length + ' groups, ' + S.income.length + ' income');
-    }
-  }, 1000);
-
   // Month pill
   document.getElementById('monthPill').textContent = new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'});
 
@@ -3080,7 +3074,8 @@ window.onload = function() {
   document.getElementById('exportBtn').addEventListener('click', exportData);
   document.getElementById('importBtn').addEventListener('click', function(){document.getElementById('importFile').click();});
   document.getElementById('importFile').addEventListener('change', importData);
-  document.getElementById('setCashBtn').addEventListener('click', function() {
+  var setCashEl = document.getElementById('setCashBtn');
+  if (setCashEl) setCashEl.addEventListener('click', function() {
     var amt = parseFloat(prompt('Enter your current cash balance:'));
     if (isNaN(amt) || amt < 0) { toast('Invalid amount'); return; }
     S.cashBalance = Math.round(amt * 100) / 100;
