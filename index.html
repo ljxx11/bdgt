@@ -2922,6 +2922,16 @@ var swTouchX = 0, swTouchY = 0, swTouchT = 0;
 window.onload = function() {
   loadS();
 
+  // Debug: show what was loaded
+  setTimeout(function() {
+    var raw = localStorage.getItem('piggybank_v2');
+    if (!raw) {
+      toast('⚠️ DEBUG: No data in localStorage!');
+    } else {
+      toast('✅ DEBUG: Loaded ' + S.groups.length + ' groups, ' + S.income.length + ' income');
+    }
+  }, 1000);
+
   // Month pill
   document.getElementById('monthPill').textContent = new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'});
 
