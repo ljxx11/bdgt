@@ -911,11 +911,28 @@ var dialOpen = false;
 var ufCollapsed = false;
 var swTouchX = 0, swTouchY = 0, swTouchT = 0;
 
-function saveS() { localStorage.setItem('piggybank_v2', JSON.stringify(S)); }
+function saveS() {
+  try {
+    var json = JSON.stringify(S);
+    localStorage.setItem('piggybank_v2', json);
+  } catch(e) {
+    console.error('Failed to save data:', e);
+    toast('⚠️ Could not save data!');
+  }
+}
 function loadS() {
   // Try new key first, fall back to old key for migration
   var d = localStorage.getItem('piggybank_v2') || localStorage.getItem('piggybank_v1');
-  if (d) { try { S = JSON.parse(d); } catch(e){} }
+  if (d) {
+    try {
+      var parsed = JSON.parse(d);
+      S = parsed;
+    } catch(e) {
+      console.error('Failed to parse saved data:', e);
+    }
+  } else {
+    console.log('No saved data found in localStorage');
+  }
   if (!S.income) S.income = [];
   if (!S.expenses) S.expenses = [];
   if (!S.groups) S.groups = [];
@@ -3068,7 +3085,7 @@ window.onload = function() {
   // manifest served as static file
 
   if ('serviceWorker' in navigator) {
-    var sw = 'const C="pb-v3",A=["./"];' +
+    var sw = 'const C="pb-v8",A=["./"];' +
       'self.addEventListener("install",function(e){e.waitUntil(caches.open(C).then(function(c){return c.addAll(A);}));self.skipWaiting();});' +
       'self.addEventListener("activate",function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x!==C;}).map(function(x){return caches.delete(x);}));}));self.clients.claim();});' +
       'self.addEventListener("fetch",function(e){e.respondWith(caches.match(e.request).then(function(r){return r||fetch(e.request).catch(function(){return caches.match("./");});}));});';
